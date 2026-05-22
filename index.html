@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flows de WhatsApp — Vonex.AI</title>
+<link rel="stylesheet" href="app.css?v=3">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<style>
+/* ── builder view ── */
+.builder-wrap{display:flex;flex:1;overflow:hidden;flex-direction:column;}
+.builder-lhdr{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 24px;background:var(--surface);
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;}
+.back-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:var(--r-sm);border:1px solid var(--border);
+  background:var(--surface);color:var(--t2);cursor:pointer;
+  flex-shrink:0;transition:background .15s,border-color .15s,color .15s;
+}
+.back-btn:hover{background:var(--border-s);border-color:var(--border-d);color:var(--clr-violet);}
+.back-btn i{font-size:16px;}
+.bc-item{color:var(--t3);font-size:13px;}
+.bc-sep{font-size:11px;color:var(--tph);}
+.bc-cur{color:var(--t1);font-weight:500;font-size:13px;}
+.autosave{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--t3);}
+.autosave.saved{color:var(--ok);}
+.builder-actions{display:flex;align-items:center;gap:8px;}
+.builder-body{display:flex;flex:1;overflow:hidden;}
+.editor-panel{
+  flex:1;overflow-y:auto;padding:24px;
+  display:flex;flex-direction:column;gap:20px;
+  border-right:1px solid var(--border);min-width:0;
+}
+.preview-panel{
+  width:340px;flex-shrink:0;overflow-y:auto;padding:20px;
+  background:var(--bg);display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+/* editor sections */
+.section{background:var(--surface);border-radius:var(--r-xl);box-shadow:var(--shadow);}
+.section-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid var(--border-s);
+}
+.section-hdr h4{font-size:14px;font-weight:600;color:var(--t1);}
+.section-body{padding:20px;display:flex;flex-direction:column;gap:16px;}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fields-grid .span2{grid-column:span 2;}
+/* field card */
+.field-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;}
+.field-card-hdr{
+  display:flex;align-items:center;gap:8px;padding:10px 14px;
+  background:var(--border-s);cursor:pointer;user-select:none;
+}
+.field-card-hdr .type-chip{
+  display:flex;align-items:center;gap:4px;
+  background:var(--clr-violet-ll);color:var(--clr-violet);
+  font-size:11px;font-weight:600;border-radius:4px;padding:2px 8px;white-space:nowrap;
+}
+.field-card-hdr .lbl{flex:1;font-size:13px;font-weight:500;color:var(--t1);}
+.field-card-hdr .req-badge{font-size:10px;font-weight:600;color:var(--err);background:var(--err-bg);border-radius:4px;padding:1px 6px;}
+.field-card-body{padding:14px;display:flex;flex-direction:column;gap:12px;}
+.field-card-body.hidden{display:none;}
+.opts-list{display:flex;flex-direction:column;gap:6px;}
+.opt-row{display:flex;align-items:center;gap:6px;}
+.opt-row input{
+  flex:1;height:34px;border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:0 10px;font-size:12.5px;font-family:inherit;color:var(--t1);outline:none;
+}
+.opt-row input:focus{border-color:var(--clr-cyan);}
+.opt-del{
+  width:26px;height:26px;border-radius:6px;border:none;background:transparent;color:var(--t3);
+  display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;flex-shrink:0;
+}
+.opt-del:hover{background:var(--err-bg);color:var(--err);}
+.add-field-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px;border:1.5px dashed var(--border);border-radius:var(--r-md);
+  cursor:pointer;font-size:13px;font-weight:500;color:var(--t3);
+  background:transparent;transition:.15s;width:100%;font-family:inherit;
+}
+.add-field-btn:hover{border-color:var(--clr-violet);color:var(--clr-violet);background:var(--clr-violet-ll);}
+.type-picker{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 0;}
+.type-opt{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:.1s;
+}
+.type-opt:hover{border-color:var(--clr-violet);background:var(--clr-violet-ll);}
+.type-opt i{font-size:18px;color:var(--clr-violet);}
+.type-opt span{font-size:12.5px;font-weight:500;color:var(--t1);}
+.field-picker-inline{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:10px;margin-top:8px;
+}
+.field-picker-inline.hidden{display:none;}
+/* toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.toggle{
+  width:40px;height:22px;border-radius:var(--r-circ);background:var(--border-d);
+  position:relative;cursor:pointer;border:none;transition:background .2s;flex-shrink:0;
+}
+.toggle.on{background:var(--clr-violet);}
+.toggle::after{
+  content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;
+  border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.15);transition:left .2s;
+}
+.toggle.on::after{left:20px;}
+/* WhatsApp preview */
+.preview-label{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;align-self:flex-start;}
+.phone-frame{
+  width:280px;background:#fff;border-radius:24px;
+  box-shadow:0 8px 40px rgba(0,0,0,.18),0 0 0 8px #111;overflow:hidden;flex-shrink:0;
+}
+.phone-status{height:28px;background:#075e54;display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;color:#fff;font-weight:600;}
+.wa-screen{background:#fff;}
+.wa-header{background:#075e54;padding:10px 14px 12px;display:flex;align-items:center;gap:10px;}
+.wa-header .back{color:#fff;font-size:18px;}
+.wa-header .av{width:32px;height:32px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;}
+.wa-header .info .name{font-size:13px;font-weight:600;color:#fff;}
+.wa-header .info .sub{font-size:10px;color:rgba(255,255,255,.7);}
+.wa-screen-body{padding:14px;display:flex;flex-direction:column;gap:10px;}
+.wa-title{font-size:15px;font-weight:700;color:#111;margin-bottom:2px;}
+.wa-field{display:flex;flex-direction:column;gap:3px;}
+.wa-field-label{font-size:11px;font-weight:600;color:#555;display:flex;align-items:center;gap:3px;}
+.wa-field-label .req{color:var(--err);font-size:10px;}
+.wa-input,.wa-date,.wa-select{height:34px;border:1.5px solid #d6e1e9;border-radius:8px;padding:0 10px;font-size:12px;background:#fafafa;display:flex;align-items:center;}
+.wa-date,.wa-select{justify-content:space-between;}
+.wa-radio-opt,.wa-check-opt{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1.5px solid #d6e1e9;border-radius:8px;background:#fafafa;font-size:11.5px;color:#333;}
+.wa-radio-dot{width:16px;height:16px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;}
+.wa-check-box{width:16px;height:16px;border-radius:4px;border:2px solid #ccc;flex-shrink:0;}
+.wa-footer{margin-top:6px;background:#25D366;color:#fff;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;}
+.wa-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:32px 16px;text-align:center;}
+.wa-placeholder i{font-size:40px;color:#d6e1e9;}
+.wa-placeholder p{font-size:12px;color:#aaa;line-height:1.4;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ HEADER (shared) ══ -->
+  <header class="hdr">
+    <div class="hdr-brand">
+      <a href="#" class="hdr-logo" onclick="showListing();return false;">
+        <img src="vonex_ai.svg" alt="" height="14">
+      </a>
+      <nav class="hdr-nav">
+        <a href="#" class="hdr-nav-item">Campanha <i class="ph ph-caret-down"></i></a>
+        <a href="#" class="hdr-nav-item">Chat <span class="nav-badge">25</span></a>
+        <a href="#" class="hdr-nav-item">Jornada <i class="ph ph-caret-down"></i></a>
+        <a href="#" class="hdr-nav-item">Relatórios <i class="ph ph-caret-down"></i></a>
+        <a href="#" class="hdr-nav-item">Monitoramentos <i class="ph ph-caret-down"></i></a>
+      </nav>
+    </div>
+    <div class="hdr-right">
+      <button class="hdr-plus" title="Criar novo" onclick="showBuilder(null)"><i class="ph ph-plus"></i></button>
+      <button class="hdr-icon" title="Notificações"><i class="ph ph-tray"></i><span class="pip">22</span></button>
+      <button class="hdr-icon" title="Ajuda"><i class="ph ph-question"></i></button>
+      <button class="hdr-icon" title="Configurações"><i class="ph ph-gear"></i></button>
+      <div class="hdr-avatar" title="Minha conta">SS</div>
+    </div>
+  </header>
+
+  <!-- ══ BODY ══ -->
+  <div class="app-body">
+
+    <!-- ── SIDEBAR (shared) ── -->
+    <aside class="sidebar">
+      <div class="sidebar-head"><i class="ph ph-gear-six"></i> Configurações</div>
+      <div class="sidebar-lbl">Canais</div>
+      <div class="sidebar-item" style="font-weight:500;color:var(--t1)">
+        <i class="ph ph-whatsapp-logo" style="color:#25D366"></i> Whatsapp
+      </div>
+      <a href="#" class="sidebar-item sub" onclick="return false">Modelos de mensagem</a>
+      <a href="#" class="sidebar-item sub" onclick="return false">Números</a>
+      <a href="#" class="sidebar-item sub active" onclick="showListing();return false">Flows</a>
+      <a href="#" class="sidebar-item"><i class="ph ph-monitor"></i> WhatsApp Web</a>
+      <a href="#" class="sidebar-item"><i class="ph ph-envelope-simple"></i> E-mail</a>
+      <a href="#" class="sidebar-item"><i class="ph ph-package"></i> Produto</a>
+      <div class="sidebar-lbl">Cadastros</div>
+      <a href="#" class="sidebar-item"><i class="ph ph-headset"></i> Atendimento</a>
+      <a href="#" class="sidebar-item"><i class="ph ph-folder"></i> Recursos gerenciais</a>
+      <a href="#" class="sidebar-item"><i class="ph ph-sparkle"></i> Inteligência Artificial</a>
+      <a href="#" class="sidebar-item"><i class="ph ph-tree-structure"></i> API</a>
+    </aside>
+
+    <!-- ══ VIEWS ══ -->
+    <div id="views" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+      <!-- ── VIEW: LISTAGEM ── -->
+      <div id="v-listing" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+        <div class="pg-hdr">
+          <div class="lhdr">
+            <div class="lhdr-title">
+              <h3>Flows de WhatsApp</h3>
+              <p>Crie e gerencie formulários interativos nativos do WhatsApp</p>
+            </div>
+            <button class="btn btn-prim btn-lg" onclick="showBuilder(null)">
+              <i class="ph ph-plus"></i> Novo flow
+            </button>
+          </div>
+          <div class="fbar">
+            <div class="inp-search">
+              <i class="ph ph-magnifying-glass"></i>
+              <input type="text" id="search" placeholder="Pesquisar flow" oninput="renderListing()">
+            </div>
+            <div class="sel-filter" style="flex:0 0 160px">
+              <select id="filterNum" onchange="renderListing()">
+                <option value="">Número</option>
+                <option>11 3777-1887</option>
+                <option>11 3777-9335</option>
+                <option>11 3777-7627</option>
+              </select>
+              <i class="ph ph-caret-down"></i>
+            </div>
+            <div class="sel-filter" style="flex:0 0 168px">
+              <select id="filterStatus" onchange="renderListing()">
+                <option value="">Status</option>
+                <option value="publicado">Publicado</option>
+                <option value="rascunho">Rascunho</option>
+                <option value="depreciado">Depreciado</option>
+                <option value="erro">Erro de publicação</option>
+              </select>
+              <i class="ph ph-caret-down"></i>
+            </div>
+            <div class="sel-filter" style="flex:0 0 160px;margin-left:auto">
+              <select id="sortBy" onchange="renderListing()">
+                <option value="recentes">Mais recentes</option>
+                <option value="antigos">Mais antigos</option>
+                <option value="nome">Nome (A–Z)</option>
+              </select>
+              <i class="ph ph-caret-down"></i>
+            </div>
+          </div>
+        </div>
+
+        <main class="main">
+          <div class="card">
+            <table class="dtable">
+              <thead>
+                <tr>
+                  <th>Nome do flow</th>
+                  <th>Número</th>
+                  <th>Status <i class="ph ph-info" style="font-size:12px;vertical-align:middle;opacity:.6"></i></th>
+                  <th>Criado em</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+            <div class="tfoot">
+              <span id="pgInfo"></span>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="pagination" id="pgBtns"></div>
+                <div class="per-page">
+                  <select id="perPage" onchange="perPg=+this.value;listPage=1;renderListing()">
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                  </select>
+                  página
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div><!-- /v-listing -->
+
+      <!-- ── VIEW: BUILDER ── -->
+      <div id="v-builder" class="builder-wrap" style="display:none;">
+
+        <div class="builder-lhdr">
+          <div class="breadcrumb">
+            <button class="back-btn" onclick="showListing()" title="Voltar à listagem">
+              <i class="ph ph-arrow-left"></i>
+            </button>
+            <span class="bc-item">Flows</span>
+            <i class="ph ph-caret-right bc-sep"></i>
+            <span class="bc-cur" id="bCrumb">Novo flow</span>
+          </div>
+          <div id="autosave" class="autosave">
+            <i class="ph ph-cloud"></i> Rascunho
+          </div>
+          <div class="builder-actions">
+            <button class="btn btn-quat" onclick="showListing()">Cancelar</button>
+            <button class="btn btn-sec" onclick="saveDraft()">
+              <i class="ph ph-floppy-disk"></i> Salvar rascunho
+            </button>
+            <button class="btn btn-prim" id="publishBtn" onclick="openPublish()">
+              <i class="ph ph-rocket-launch"></i> Publicar flow
+            </button>
+          </div>
+        </div>
+
+        <div class="builder-body">
+
+          <!-- EDITOR -->
+          <div class="editor-panel">
+
+            <!-- Configurações gerais -->
+            <div class="section">
+              <div class="section-hdr">
+                <h4><i class="ph ph-sliders" style="margin-right:6px;color:var(--t3)"></i>Configurações gerais</h4>
+              </div>
+              <div class="section-body">
+                <div class="fields-grid">
+                  <div class="field-row span2">
+                    <label class="field-label">Nome do flow <span class="req">*</span></label>
+                    <input class="ipt" id="bName" type="text" placeholder="Ex.: coleta_dados_syscob"
+                      oninput="updateCrumb();autosaveNow();updatePreview()">
+                  </div>
+                  <div class="field-row">
+                    <label class="field-label">Número do WhatsApp <span class="req">*</span></label>
+                    <div class="sel-wrap">
+                      <select id="bNumber" onchange="autosaveNow();updatePreview()">
+                        <option value="">Selecione</option>
+                        <option>11 3777-1887</option>
+                        <option>11 3777-9335</option>
+                        <option>11 3777-7627</option>
+                        <option>11 3777-1898</option>
+                      </select>
+                      <i class="ph ph-caret-down"></i>
+                    </div>
+                  </div>
+                  <div class="field-row">
+                    <label class="field-label">Título da tela <span class="req">*</span></label>
+                    <input class="ipt" id="bTitle" type="text" placeholder="Ex.: Informe seus dados"
+                      oninput="autosaveNow();updatePreview()">
+                  </div>
+                  <div class="field-row">
+                    <label class="field-label">Texto do botão de envio <span class="req">*</span></label>
+                    <input class="ipt" id="bSubmit" type="text" placeholder="Ex.: Enviar"
+                      oninput="autosaveNow();updatePreview()">
+                  </div>
+                  <div class="field-row">
+                    <label class="field-label">Mensagem de confirmação</label>
+                    <input class="ipt" id="bConfirm" type="text" placeholder="Ex.: Dados enviados com sucesso!"
+                      oninput="autosaveNow()">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Campos da tela -->
+            <div class="section">
+              <div class="section-hdr">
+                <h4><i class="ph ph-list-bullets" style="margin-right:6px;color:var(--t3)"></i>Campos da tela</h4>
+                <span style="font-size:12px;color:var(--t3)" id="fieldCount">0 campo(s)</span>
+              </div>
+              <div class="section-body" id="fieldsContainer">
+                <div class="info-banner" id="noFieldsBanner">
+                  <i class="ph ph-info"></i>
+                  Adicione ao menos um campo à tela antes de publicar o flow.
+                </div>
+              </div>
+              <div style="padding:0 20px 20px">
+                <button class="add-field-btn" onclick="togglePicker()">
+                  <i class="ph ph-plus-circle"></i> Adicionar campo
+                </button>
+                <div class="field-picker-inline hidden" id="fieldPicker">
+                  <div class="type-picker">
+                    <div class="type-opt" onclick="addField('text')"><i class="ph ph-text-aa"></i><span>Texto livre</span></div>
+                    <div class="type-opt" onclick="addField('radio')"><i class="ph ph-radio-button"></i><span>Seleção única</span></div>
+                    <div class="type-opt" onclick="addField('checkbox')"><i class="ph ph-check-square"></i><span>Múltipla escolha</span></div>
+                    <div class="type-opt" onclick="addField('dropdown')"><i class="ph ph-caret-circle-down"></i><span>Dropdown</span></div>
+                    <div class="type-opt" onclick="addField('date')" style="grid-column:span 2"><i class="ph ph-calendar"></i><span>Data</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /editor-panel -->
+
+          <!-- PREVIEW -->
+          <div class="preview-panel">
+            <span class="preview-label">Prévia do flow</span>
+            <div class="phone-frame">
+              <div class="phone-status"><i class="ph ph-wifi-high"></i> 9:41</div>
+              <div class="wa-screen">
+                <div class="wa-header">
+                  <i class="ph ph-arrow-left back"></i>
+                  <div class="av"><i class="ph ph-whatsapp-logo"></i></div>
+                  <div class="info">
+                    <div class="name" id="previewTitle">Novo flow</div>
+                    <div class="sub">Flow do WhatsApp</div>
+                  </div>
+                </div>
+                <div class="wa-screen-body" id="previewBody">
+                  <div class="wa-placeholder">
+                    <i class="ph ph-layout"></i>
+                    <p>Configure as opções ao lado para ver a prévia aqui.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--t3);text-align:center;max-width:260px;line-height:1.5">
+              Prévia simulada. O layout final pode variar no WhatsApp.
+            </div>
+          </div>
+
+        </div><!-- /builder-body -->
+      </div><!-- /v-builder -->
+
+    </div><!-- /views -->
+  </div><!-- /app-body -->
+</div><!-- /app -->
+
+<!-- ══ MODAL: deprecar / excluir ══ -->
+<div class="modal-bg" id="listingModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h4 id="mTitle">Confirmar</h4>
+      <button class="modal-close" onclick="closeListingModal()"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p id="mText"></p>
+      <div class="modal-alert warn" id="mAlert" style="display:none">
+        <i class="ph-fill ph-warning-circle"></i>
+        <span id="mAlertText"></span>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-link" onclick="closeListingModal()">Cancelar</button>
+      <button class="btn" id="mConfirmBtn" onclick="doListingConfirm()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: publicar ══ -->
+<div class="modal-bg" id="publishModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h4>Publicar flow</h4>
+      <button class="modal-close" onclick="closePublish()"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p>Você está prestes a publicar o flow <strong id="pubName"></strong>.</p>
+      <div class="modal-alert warn" style="margin-top:14px">
+        <i class="ph-fill ph-warning-circle"></i>
+        <span>Após publicar, este flow não poderá ser editado. Para alterar, será necessário depreciá-lo e criar um novo.</span>
+      </div>
+      <div class="modal-alert info" style="margin-top:8px">
+        <i class="ph ph-info"></i>
+        <span id="pubSummary"></span>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-link" onclick="closePublish()">Cancelar</button>
+      <button class="btn btn-prim" onclick="doPublish()">Publicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOASTS ══ -->
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════════════════════ */
+const FLOWS = [
+  {id:1, name:'Coleta de dados Syscob',   number:'11 3777-1887', status:'publicado',  created:'15/05/2026', fields:3},
+  {id:2, name:'Formulário de negociação', number:'11 3777-1887', status:'rascunho',   created:'14/05/2026', fields:2},
+  {id:3, name:'Pesquisa de satisfação',   number:'11 3777-9335', status:'publicado',  created:'12/05/2026', fields:4},
+  {id:4, name:'Cadastro clientes DLoa',   number:'11 3777-7627', status:'depreciado', created:'10/05/2026', fields:5},
+  {id:5, name:'Validação de CPF',         number:'11 3777-1887', status:'erro',       created:'08/05/2026', fields:1},
+  {id:6, name:'Coleta de endereço',       number:'11 3777-9335', status:'rascunho',   created:'07/05/2026', fields:2},
+  {id:7, name:'Agendamento online',       number:'11 3777-1887', status:'publicado',  created:'05/05/2026', fields:3},
+  {id:8, name:'Pré-atendimento',          number:'11 3777-7627', status:'rascunho',   created:'03/05/2026', fields:1},
+];
+
+const BADGE = {
+  publicado:  {cls:'b-pub',   lbl:'Publicado'},
+  rascunho:   {cls:'b-draft', lbl:'Rascunho'},
+  depreciado: {cls:'b-dep',   lbl:'Depreciado'},
+  erro:       {cls:'b-err',   lbl:'Erro de publicação'},
+};
+
+const SAMPLES = {
+  default: {
+    name:'coleta_dados_syscob', number:'11 3777-1887',
+    title:'Informe seus dados', submit:'Enviar',
+    confirm:'Seus dados foram enviados com sucesso!',
+    fields:[
+      {id:1,type:'text',    label:'Nome completo',       required:true,  options:[]},
+      {id:2,type:'text',    label:'CPF',                 required:true,  options:[]},
+      {id:3,type:'radio',   label:'Motivo do contato',   required:true,  options:['Negociação','Dúvida','Outros']},
+      {id:4,type:'checkbox',label:'Canais de preferência',required:false, options:['WhatsApp','E-mail','Telefone']},
+      {id:5,type:'dropdown',label:'Departamento',         required:true,  options:['Financeiro','Comercial','Suporte']},
+      {id:6,type:'date',    label:'Data de nascimento',  required:false, options:[]},
+    ]
+  },
+  2:{name:'formulario_negociacao',number:'11 3777-1887',title:'Motivo do contato',submit:'Enviar',confirm:'',
+    fields:[{id:1,type:'text',label:'Nome completo',required:true,options:[]},{id:2,type:'radio',label:'Motivo do contato',required:true,options:['Negociação','Dúvida','Outros']}]},
+  5:{name:'validacao_cpf',number:'11 3777-1887',title:'Informe seu CPF',submit:'Confirmar',confirm:'',
+    fields:[{id:1,type:'text',label:'CPF',required:true,options:[]}]},
+  6:{name:'coleta_endereco',number:'11 3777-9335',title:'Endereço de entrega',submit:'Confirmar endereço',confirm:'',
+    fields:[{id:1,type:'text',label:'CEP',required:true,options:[]},{id:2,type:'dropdown',label:'Estado',required:true,options:['São Paulo','Rio de Janeiro','Minas Gerais']},{id:3,type:'text',label:'Cidade',required:true,options:[]}]},
+};
+
+const TYPE_META = {
+  text:     {label:'Texto livre',      icon:'ph-text-aa'},
+  radio:    {label:'Seleção única',    icon:'ph-radio-button'},
+  checkbox: {label:'Múltipla escolha', icon:'ph-check-square'},
+  dropdown: {label:'Dropdown',         icon:'ph-caret-circle-down'},
+  date:     {label:'Data',             icon:'ph-calendar'},
+};
+
+/* ════════════════════════════════════════════════════════════
+   ROUTER
+════════════════════════════════════════════════════════════ */
+function showListing() {
+  document.getElementById('v-listing').style.display = 'flex';
+  document.getElementById('v-builder').style.display = 'none';
+  document.querySelector('.sidebar').style.display = '';
+  renderListing();
+}
+
+function showBuilder(flowId) {
+  document.getElementById('v-listing').style.display = 'none';
+  document.getElementById('v-builder').style.display = 'flex';
+  document.querySelector('.sidebar').style.display = 'none';
+  initBuilder(flowId);
+}
+
+/* ════════════════════════════════════════════════════════════
+   LISTING
+════════════════════════════════════════════════════════════ */
+let listPage = 1, perPg = 10;
+let pendingAct = null, pendingId = null;
+
+function filteredFlows() {
+  const q   = document.getElementById('search').value.toLowerCase();
+  const num = document.getElementById('filterNum').value;
+  const st  = document.getElementById('filterStatus').value;
+  const s   = document.getElementById('sortBy').value;
+  let list  = FLOWS.filter(f =>
+    (!q  || f.name.toLowerCase().includes(q)) &&
+    (!num || f.number === num) &&
+    (!st  || f.status === st)
+  );
+  if (s==='antigos') list=[...list].reverse();
+  if (s==='nome')    list=[...list].sort((a,b)=>a.name.localeCompare(b.name,'pt'));
+  return list;
+}
+
+function renderListing() {
+  const list  = filteredFlows();
+  const start = (listPage-1)*perPg;
+  const slice = list.slice(start, start+perPg);
+  const tbody = document.getElementById('tbody');
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:48px;color:var(--t3)">
+      <i class="ph ph-wind" style="font-size:36px;display:block;margin-bottom:10px;opacity:.5"></i>
+      Nenhum flow encontrado</td></tr>`;
+    document.getElementById('pgInfo').textContent = '0 itens';
+    document.getElementById('pgBtns').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = slice.map(f => {
+    const b = BADGE[f.status];
+    return `<tr>
+      <td class="cell-name">
+        <div class="nm">${f.name}</div>
+        <div class="mt">${f.fields} campo${f.fields!==1?'s':''}</div>
+      </td>
+      <td>${f.number}</td>
+      <td><span class="badge ${b.cls}">${b.lbl}</span></td>
+      <td>${f.created}</td>
+      <td class="acts">${buildActions(f)}</td>
+    </tr>`;
+  }).join('');
+
+  const end = Math.min(start+perPg, list.length);
+  document.getElementById('pgInfo').textContent = `${start+1}–${end} de ${list.length} itens`;
+  renderPg(Math.ceil(list.length/perPg));
+}
+
+function buildActions(f) {
+  const B = (icon,tip,fn,cls='') =>
+    `<button class="ico-btn ${cls}" title="${tip}" onclick="${fn}(${f.id})"><i class="ph ${icon}"></i></button>`;
+  const a = [];
+  if (f.status==='rascunho'||f.status==='erro') a.push(B('ph-pencil-simple','Editar','editFlow'));
+  if (f.status==='publicado')                   a.push(B('ph-eye','Visualizar','viewFlow'));
+  if (f.status==='publicado')                   a.push(B('ph-prohibit','Depreciar','openDeprecate'));
+  if (f.status!=='depreciado')                  a.push(B('ph-copy','Duplicar','dupFlow'));
+  if (f.status==='rascunho'||f.status==='erro') a.push(B('ph-trash','Excluir','openDelete','danger'));
+  return a.join('');
+}
+
+function renderPg(total) {
+  const c = document.getElementById('pgBtns');
+  if (total<=1){c.innerHTML='';return;}
+  let h = `<button class="pgbtn" ${listPage===1?'disabled':''} onclick="goPage(${listPage-1})"><i class="ph ph-caret-left"></i></button>`;
+  for(let i=1;i<=total;i++) h+=`<button class="pgbtn ${listPage===i?'on':''}" onclick="goPage(${i})">${i}</button>`;
+  h+=`<button class="pgbtn" ${listPage===total?'disabled':''} onclick="goPage(${listPage+1})"><i class="ph ph-caret-right"></i></button>`;
+  c.innerHTML=h;
+}
+function goPage(n){listPage=n;renderListing();}
+
+function editFlow(id){ showBuilder(id); }
+function viewFlow(id){ showBuilder(id); }
+
+function dupFlow(id) {
+  const f = FLOWS.find(x=>x.id===id);
+  FLOWS.unshift({...f,id:Date.now(),name:f.name+' (cópia)',status:'rascunho',created:'20/05/2026'});
+  renderListing(); toast('ok',`"${f.name}" duplicado como rascunho`);
+}
+
+function openDeprecate(id) {
+  const f=FLOWS.find(x=>x.id===id);
+  pendingAct='dep'; pendingId=id;
+  document.getElementById('mTitle').textContent='Depreciar flow';
+  document.getElementById('mText').textContent=`Você está prestes a depreciar o flow "${f.name}".`;
+  const al=document.getElementById('mAlert'); al.style.display='flex';
+  document.getElementById('mAlertText').textContent='Este flow está sendo usado em 2 template(s) e 1 jornada(s). Depreciá-lo impedirá o envio nestes contextos.';
+  const btn=document.getElementById('mConfirmBtn'); btn.className='btn btn-prim'; btn.textContent='Depreciar';
+  document.getElementById('listingModal').classList.add('open');
+}
+
+function openDelete(id) {
+  const f=FLOWS.find(x=>x.id===id);
+  pendingAct='del'; pendingId=id;
+  document.getElementById('mTitle').textContent='Excluir flow';
+  document.getElementById('mText').textContent=`Tem certeza que deseja excluir permanentemente o flow "${f.name}"? Esta ação não pode ser desfeita.`;
+  document.getElementById('mAlert').style.display='none';
+  const btn=document.getElementById('mConfirmBtn'); btn.className='btn btn-prim'; btn.textContent='Excluir';
+  document.getElementById('listingModal').classList.add('open');
+}
+
+function doListingConfirm() {
+  const f=FLOWS.find(x=>x.id===pendingId);
+  if(pendingAct==='dep'){f.status='depreciado';toast('ok',`Flow "${f.name}" depreciado`);}
+  else if(pendingAct==='del'){FLOWS.splice(FLOWS.indexOf(f),1);toast('ok','Flow excluído');}
+  closeListingModal(); renderListing();
+}
+function closeListingModal(){document.getElementById('listingModal').classList.remove('open');}
+
+/* ════════════════════════════════════════════════════════════
+   BUILDER
+════════════════════════════════════════════════════════════ */
+let bFields = [], bFieldSeq = 0;
+
+function initBuilder(flowId) {
+  const data = SAMPLES[flowId] || SAMPLES['default'];
+  document.getElementById('bName').value    = data.name;
+  document.getElementById('bNumber').value  = data.number;
+  document.getElementById('bTitle').value   = data.title;
+  document.getElementById('bSubmit').value  = data.submit;
+  document.getElementById('bConfirm').value = data.confirm || '';
+  bFields    = data.fields.map(f=>({...f, options:[...(f.options||[])]}));
+  bFieldSeq  = bFields.length ? Math.max(...bFields.map(f=>f.id)) : 0;
+  document.getElementById('autosave').className='autosave';
+  document.getElementById('autosave').innerHTML='<i class="ph ph-cloud"></i> Rascunho';
+  updateCrumb(); renderFields(); updatePreview();
+}
+
+function updateCrumb() {
+  const nm = document.getElementById('bName').value.trim();
+  document.getElementById('bCrumb').textContent = nm || 'Novo flow';
+  document.getElementById('pubName').textContent = `"${nm||'sem nome'}"`;
+}
+
+let saveTimer;
+function autosaveNow() {
+  const el=document.getElementById('autosave');
+  el.className='autosave'; el.innerHTML='<i class="ph ph-cloud-arrow-up"></i> Salvando…';
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    el.className='autosave saved'; el.innerHTML='<i class="ph-fill ph-check-circle"></i> Rascunho salvo';
+    setTimeout(()=>{el.className='autosave';el.innerHTML='<i class="ph ph-cloud"></i> Rascunho';},3000);
+  },900);
+}
+
+/* ── FIELDS ── */
+function togglePicker(){document.getElementById('fieldPicker').classList.toggle('hidden');}
+
+function addField(type) {
+  document.getElementById('fieldPicker').classList.add('hidden');
+  const id = ++bFieldSeq;
+  const opts = ['radio','checkbox','dropdown'].includes(type) ? ['',''] : [];
+  bFields.push({id, type, label:'', required:true, options:opts});
+  renderFields(); autosaveNow(); updatePreview();
+}
+
+function removeField(id) {
+  bFields=bFields.filter(f=>f.id!==id); renderFields(); autosaveNow(); updatePreview();
+}
+
+function moveField(id, dir) {
+  const idx=bFields.findIndex(f=>f.id===id);
+  if(dir===-1&&idx===0||dir===1&&idx===bFields.length-1)return;
+  [bFields[idx],bFields[idx+dir]]=[bFields[idx+dir],bFields[idx]];
+  renderFields(); updatePreview();
+}
+
+function renderFields() {
+  const cnt=document.getElementById('fieldsContainer');
+  document.getElementById('fieldCount').textContent=`${bFields.length} campo${bFields.length!==1?'s':''}`;
+  if(!bFields.length){
+    cnt.innerHTML=''; cnt.appendChild(document.getElementById('noFieldsBanner')); return;
+  }
+  cnt.innerHTML=bFields.map((f,i)=>buildFieldCard(f,i)).join('');
+  bFields.forEach(f=>{
+    const lEl=document.getElementById(`fl_${f.id}`);
+    if(lEl){
+      lEl.value=f.label;
+      lEl.oninput=e=>{f.label=e.target.value;autosaveNow();updatePreview();
+        const h=document.getElementById(`fh_${f.id}`);if(h)h.textContent=e.target.value||'(sem label)';};
+    }
+    const rEl=document.getElementById(`fr_${f.id}`);
+    if(rEl&&f.required)rEl.classList.add('on');
+    (f.options||[]).forEach((o,oi)=>{
+      const oEl=document.getElementById(`fo_${f.id}_${oi}`);
+      if(oEl){oEl.value=o;oEl.oninput=e=>{f.options[oi]=e.target.value;autosaveNow();updatePreview();};}
+    });
+  });
+}
+
+function buildFieldCard(f) {
+  const tm=TYPE_META[f.type];
+  const hasOpts=['radio','checkbox','dropdown'].includes(f.type);
+  const optRows=!hasOpts?'':
+    `<div class="field-row">
+      <label class="field-label">Opções <span class="req">*</span></label>
+      <div class="opts-list">
+        ${(f.options||[]).map((o,oi)=>`
+          <div class="opt-row">
+            <input id="fo_${f.id}_${oi}" type="text" placeholder="Opção ${oi+1}">
+            <button class="opt-del" onclick="removeOpt(${f.id},${oi})"><i class="ph ph-minus-circle"></i></button>
+          </div>`).join('')}
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="addOpt(${f.id})" style="align-self:flex-start;margin-top:4px">
+        <i class="ph ph-plus"></i> Adicionar opção
+      </button>
+    </div>`;
+  return `
+  <div class="field-card" id="fc_${f.id}">
+    <div class="field-card-hdr" onclick="toggleCard(${f.id})">
+      <i class="ph ph-dots-six-vertical" style="color:var(--t3);font-size:16px"></i>
+      <span class="type-chip"><i class="ph ${tm.icon}"></i> ${tm.label}</span>
+      <span class="lbl" id="fh_${f.id}">${f.label||'(sem label)'}</span>
+      ${f.required?'<span class="req-badge">Obrigatório</span>':''}
+      <button class="ico-btn" title="Subir" onclick="event.stopPropagation();moveField(${f.id},-1)"><i class="ph ph-arrow-up"></i></button>
+      <button class="ico-btn" title="Descer" onclick="event.stopPropagation();moveField(${f.id},1)"><i class="ph ph-arrow-down"></i></button>
+      <button class="ico-btn danger" title="Remover" onclick="event.stopPropagation();removeField(${f.id})"><i class="ph ph-trash"></i></button>
+    </div>
+    <div class="field-card-body" id="fb_${f.id}">
+      <div class="fields-grid">
+        <div class="field-row span2">
+          <label class="field-label">Label <span class="req">*</span></label>
+          <input class="ipt" id="fl_${f.id}" type="text" placeholder="Ex.: Nome completo">
+        </div>
+        ${f.type==='text'?`<div class="field-row">
+          <label class="field-label">Tipo de entrada</label>
+          <div class="sel-wrap">
+            <select onchange="autosaveNow()"><option>Texto</option><option>Número</option><option>E-mail</option><option>Telefone</option></select>
+            <i class="ph ph-caret-down"></i>
+          </div>
+        </div>`:''}
+      </div>
+      <div class="toggle-row">
+        <span style="font-size:13px;color:var(--t2)">Campo obrigatório</span>
+        <button class="toggle ${f.required?'on':''}" id="fr_${f.id}" onclick="toggleReq(${f.id})"></button>
+      </div>
+      ${optRows}
+    </div>
+  </div>`;
+}
+
+function toggleCard(id){document.getElementById(`fb_${id}`).classList.toggle('hidden');}
+
+function toggleReq(id) {
+  const f=bFields.find(x=>x.id===id); f.required=!f.required;
+  document.getElementById(`fr_${id}`).classList.toggle('on',f.required);
+  autosaveNow();
+}
+
+function addOpt(fid) {
+  bFields.find(x=>x.id===fid).options.push('');
+  renderFields(); autosaveNow();
+}
+
+function removeOpt(fid, oi) {
+  const f=bFields.find(x=>x.id===fid);
+  if(f.options.length<=2){toast('err','Mínimo de 2 opções para este tipo de campo');return;}
+  f.options.splice(oi,1); renderFields(); autosaveNow(); updatePreview();
+}
+
+/* ── PREVIEW ── */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function updatePreview() {
+  const title  = document.getElementById('bTitle').value.trim();
+  const submit = document.getElementById('bSubmit').value.trim();
+  const name   = document.getElementById('bName').value.trim();
+  const body   = document.getElementById('previewBody');
+  document.getElementById('previewTitle').textContent = name||'Novo flow';
+  if(!title&&!bFields.length){
+    body.innerHTML=`<div class="wa-placeholder"><i class="ph ph-layout"></i><p>Configure as opções ao lado para ver a prévia aqui.</p></div>`;
+    return;
+  }
+  let html = title?`<div class="wa-title">${esc(title)}</div>`:'';
+  bFields.forEach(f=>{
+    const lbl=f.label||'(campo sem label)';
+    const req=f.required?'<span class="req">*</span>':'';
+    html+=`<div class="wa-field"><div class="wa-field-label">${esc(lbl)} ${req}</div>`;
+    if(f.type==='text')
+      html+=`<div class="wa-input" style="color:#aaa">Digite aqui…</div>`;
+    else if(f.type==='date')
+      html+=`<div class="wa-date"><span style="color:#aaa">DD/MM/AAAA</span><i class="ph ph-calendar" style="color:#aaa;font-size:14px"></i></div>`;
+    else if(f.type==='dropdown')
+      html+=`<div class="wa-select"><span style="color:#aaa">${esc(f.options.find(o=>o)||'Selecione…')}</span><i class="ph ph-caret-down" style="color:#aaa;font-size:12px"></i></div>`;
+    else if(f.type==='radio')
+      html+=f.options.slice(0,3).map(o=>`<div class="wa-radio-opt"><div class="wa-radio-dot"></div>${esc(o||'Opção')}</div>`).join('');
+    else if(f.type==='checkbox')
+      html+=f.options.slice(0,3).map(o=>`<div class="wa-check-opt"><div class="wa-check-box"></div>${esc(o||'Opção')}</div>`).join('');
+    html+=`</div>`;
+  });
+  if(submit)html+=`<div class="wa-footer">${esc(submit)}</div>`;
+  body.innerHTML=html;
+}
+
+/* ── VALIDATE & PUBLISH ── */
+function validate() {
+  const errs=[];
+  if(!document.getElementById('bName').value.trim()) errs.push('Nome do flow é obrigatório.');
+  if(!document.getElementById('bNumber').value)      errs.push('Número do WhatsApp é obrigatório.');
+  if(!document.getElementById('bTitle').value.trim()) errs.push('Título da tela é obrigatório.');
+  if(!document.getElementById('bSubmit').value.trim()) errs.push('Texto do botão de envio é obrigatório.');
+  if(!bFields.length) errs.push('Adicione ao menos um campo à tela antes de publicar o flow.');
+  bFields.forEach((f,i)=>{
+    if(!f.label.trim()) errs.push(`Campo ${i+1}: label é obrigatório.`);
+    if(['radio','checkbox','dropdown'].includes(f.type)&&f.options.filter(o=>o.trim()).length<2)
+      errs.push(`Campo ${i+1}: exige ao menos 2 opções.`);
+  });
+  return errs;
+}
+
+function openPublish() {
+  const errs=validate(); if(errs.length){toast('err',errs[0]);return;}
+  updateCrumb();
+  document.getElementById('pubSummary').textContent=
+    `Flow com ${bFields.length} campo${bFields.length!==1?'s':''} vinculado ao número ${document.getElementById('bNumber').value}.`;
+  document.getElementById('publishModal').classList.add('open');
+}
+function closePublish(){document.getElementById('publishModal').classList.remove('open');}
+
+function doPublish() {
+  closePublish();
+  const nm=document.getElementById('bName').value.trim();
+  const pb=document.getElementById('publishBtn');
+  pb.disabled=true; pb.innerHTML='<i class="ph ph-spinner"></i> Publicando…';
+  setTimeout(()=>{
+    pb.disabled=false; pb.innerHTML='<i class="ph ph-rocket-launch"></i> Publicar flow';
+    // update flow in list if editing existing, else add new
+    const existing=FLOWS.find(f=>f.name===nm);
+    if(existing) existing.status='publicado';
+    else FLOWS.unshift({id:Date.now(),name:nm,number:document.getElementById('bNumber').value,status:'publicado',created:'21/05/2026',fields:bFields.length});
+    toast('ok',`Flow "${nm}" publicado com sucesso!`);
+    setTimeout(()=>showListing(), 1500);
+  },1500);
+}
+
+function saveDraft(){autosaveNow();toast('ok','Rascunho salvo');}
+
+/* ════════════════════════════════════════════════════════════
+   TOAST & MODAL UTILS
+════════════════════════════════════════════════════════════ */
+function toast(type,msg) {
+  const c=document.getElementById('toasts');
+  const el=document.createElement('div');
+  const map={
+    ok:  {cls:'toast-ok',   icon:'ph-check-circle'},
+    err: {cls:'toast-err',  icon:'ph-x-circle'},
+    warn:{cls:'toast-warn', icon:'ph-warning-circle'},
+    info:{cls:'toast-info', icon:'ph-info'},
+  };
+  const t=map[type]||map.err;
+  el.className=`toast ${t.cls}`;
+  el.innerHTML=`
+    <i class="ph ${t.icon} toast-icon"></i>
+    <span class="toast-msg">${msg}</span>
+    <button class="toast-close" onclick="this.closest('.toast').remove()"><i class="ph ph-x"></i></button>`;
+  c.appendChild(el);
+  setTimeout(()=>el&&el.remove(),4500);
+}
+
+document.querySelectorAll('.modal-bg').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+});
+
+/* ════════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════════ */
+showListing();
+</script>
+</body>
+</html>
