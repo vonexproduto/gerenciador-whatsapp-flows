@@ -72,6 +72,7 @@
 .opts-list{display:flex;flex-direction:column;gap:10px;}
 .opt-item{display:flex;flex-direction:column;}
 .opt-item .char-count{margin-top:1px;padding-right:32px;}
+.opt-tag{color:var(--neutral-color-low-light);font-weight:400;}
 .opt-row{display:flex;align-items:center;gap:6px;}
 .opt-row input{
   flex:1;height:34px;border:1px solid var(--neutral-color-high-medium);border-radius:var(--r-sm);
@@ -118,9 +119,12 @@
 /* WhatsApp preview */
 .preview-label{font-size:11px;font-weight:600;color:var(--neutral-color-low-light);text-transform:uppercase;letter-spacing:.08em;align-self:flex-start;}
 .phone-frame{
-  width:280px;background:#fff;border-radius:24px;
+  width:280px;height:560px;background:#fff;border-radius:24px;
   box-shadow:0 8px 40px rgba(0,0,0,.18),0 0 0 8px #111;overflow:hidden;flex-shrink:0;
+  display:flex;flex-direction:column;
 }
+.wa-screen{background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;}
+.wa-screen-body{flex:1;min-height:0;overflow-y:auto;}
 .phone-status{height:28px;background:#075e54;display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;color:#fff;font-weight:600;}
 .wa-screen{background:#fff;}
 .wa-header{background:#075e54;padding:10px 14px 12px;display:flex;align-items:center;gap:10px;}
@@ -384,8 +388,9 @@
                   <div class="field-row">
                     <label class="field-label">Texto do botão de envio <span class="req"></span></label>
                     <!-- ANGULAR: <mat-form-field><input matInput [formControlName]="'name'"> -->
-                    <input class="ipt" id="bSubmit" type="text" placeholder="Ex.: Enviar"
-                      oninput="autosaveNow();updatePreview()">
+                    <input class="ipt" id="bSubmit" type="text" maxlength="30" placeholder="Ex.: Enviar"
+                      oninput="if(this.value.length>SUBMIT_MAX)this.value=this.value.slice(0,SUBMIT_MAX);updateCharCount('ccSubmit',this.value,SUBMIT_MAX);autosaveNow();updatePreview()">
+                    <span class="char-count" id="ccSubmit">30</span>
                   </div>
                   <div class="field-row">
                     <label class="field-label">Mensagem de confirmação</label>
@@ -423,7 +428,8 @@
                     <div class="type-opt" onclick="addField('radio')"><i class="ph ph-radio-button"></i><span>Seleção única</span></div>
                     <div class="type-opt" onclick="addField('checkbox')"><i class="ph ph-check-square"></i><span>Múltipla escolha</span></div>
                     <div class="type-opt" onclick="addField('dropdown')"><i class="ph ph-caret-circle-down"></i><span>Dropdown</span></div>
-                    <div class="type-opt" onclick="addField('date')" style="grid-column:span 2"><i class="ph ph-calendar"></i><span>Data</span></div>
+                    <div class="type-opt" onclick="addField('date')"><i class="ph ph-calendar"></i><span>Data</span></div>
+                    <div class="type-opt" onclick="addField('consent')" style="grid-column:span 2"><i class="ph ph-seal-check"></i><span>Campo de consentimento</span></div>
                   </div>
                 </div>
               </div>
@@ -627,6 +633,7 @@ const TYPE_META = {
   checkbox: {label:'Múltipla escolha', icon:'ph-check-square'},
   dropdown: {label:'Dropdown',         icon:'ph-caret-circle-down'},
   date:     {label:'Data',             icon:'ph-calendar'},
+  consent:  {label:'Campo de consentimento', icon:'ph-seal-check'},
 };
 
 /* Subtipos de Resposta curta (TextInput) — input-type fixo Meta */
@@ -795,6 +802,7 @@ function initBuilder(flowId) {
   document.getElementById('bNumber').value  = data.number;
   document.getElementById('bTitle').value   = data.title;
   document.getElementById('bSubmit').value  = data.submit;
+  updateCharCount('ccSubmit', data.submit || '', SUBMIT_MAX);
   document.getElementById('bConfirm').value = data.confirm || '';
   bFields    = data.fields.map(f=>({...f, options:[...(f.options||[])]}));
   bFieldSeq  = bFields.length ? Math.max(...bFields.map(f=>f.id)) : 0;
@@ -822,6 +830,7 @@ function addField(type) {
   const opts = ['radio','checkbox','dropdown'].includes(type) ? ['',''] : [];
   const field = {id, type, label:'', required:true, options:opts};
   if(type==='short') field.subtype='text';
+  if(HAS_INSTRUCTION.includes(type)) field.instruction='';
   bFields.push(field);
   renderFields(); autosaveNow(); updatePreview();
 }
@@ -849,25 +858,35 @@ function renderFields() {
   }
   cnt.innerHTML=bFields.map((f,i)=>buildFieldCard(f,i)).join('');
   bFields.forEach(f=>{
+    const lMax=labelMax(f.type);
     const lEl=document.getElementById(`fl_${f.id}`);
     if(lEl){
       lEl.value=f.label;
-      updateCharCount(`cc_${f.id}`, f.label);
+      updateCharCount(`cc_${f.id}`, f.label, lMax);
       lEl.oninput=e=>{
-        if(e.target.value.length>META_LABEL_MAX)e.target.value=e.target.value.slice(0,META_LABEL_MAX);
+        if(e.target.value.length>lMax)e.target.value=e.target.value.slice(0,lMax);
         f.label=e.target.value;autosaveNow();updatePreview();
-        updateCharCount(`cc_${f.id}`, e.target.value);
+        updateCharCount(`cc_${f.id}`, e.target.value, lMax);
         const h=document.getElementById(`fh_${f.id}`);if(h)h.textContent=e.target.value||'(sem label)';};
+    }
+    const iEl=document.getElementById(`fi_${f.id}`);
+    if(iEl){
+      iEl.value=f.instruction||'';
+      updateCharCount(`ic_${f.id}`, f.instruction, INSTRUCTION_MAX);
+      iEl.oninput=e=>{
+        if(e.target.value.length>INSTRUCTION_MAX)e.target.value=e.target.value.slice(0,INSTRUCTION_MAX);
+        f.instruction=e.target.value;autosaveNow();updatePreview();
+        updateCharCount(`ic_${f.id}`, e.target.value, INSTRUCTION_MAX);};
     }
     const rEl=document.getElementById(`fr_${f.id}`);
     if(rEl&&f.required)rEl.classList.add('on');
     (f.options||[]).forEach((o,oi)=>{
       const oEl=document.getElementById(`fo_${f.id}_${oi}`);
-      if(oEl){oEl.value=o;updateCharCount(`occ_${f.id}_${oi}`, o);
+      if(oEl){oEl.value=o;updateCharCount(`occ_${f.id}_${oi}`, o, OPTION_MAX);
         oEl.oninput=e=>{
-          if(e.target.value.length>META_LABEL_MAX)e.target.value=e.target.value.slice(0,META_LABEL_MAX);
+          if(e.target.value.length>OPTION_MAX)e.target.value=e.target.value.slice(0,OPTION_MAX);
           f.options[oi]=e.target.value;autosaveNow();updatePreview();
-          updateCharCount(`occ_${f.id}_${oi}`, e.target.value);};}
+          updateCharCount(`occ_${f.id}_${oi}`, e.target.value, OPTION_MAX);};}
     });
   });
 }
@@ -882,10 +901,10 @@ function buildFieldCard(f) {
         ${(f.options||[]).map((o,oi)=>`
           <div class="opt-item">
             <div class="opt-row">
-              <input id="fo_${f.id}_${oi}" type="text" maxlength="40" placeholder="Opção ${oi+1}">
+              <input id="fo_${f.id}_${oi}" type="text" maxlength="${OPTION_MAX}" placeholder="Opção ${oi+1}">
               <button class="opt-del" onclick="removeOpt(${f.id},${oi})"><i class="ph ph-trash"></i></button>
             </div>
-            <span class="char-count" id="occ_${f.id}_${oi}">${META_LABEL_MAX}</span>
+            <span class="char-count" id="occ_${f.id}_${oi}">${OPTION_MAX}</span>
           </div>`).join('')}
       </div>
       ${f.type==='radio'&&(f.options||[]).length>=RADIO_MAX_OPTS
@@ -916,8 +935,10 @@ function buildFieldCard(f) {
       <div class="fields-grid">
         <div class="field-row span2">
           <label class="field-label">Label <span class="req"></span></label>
-          <input class="ipt" id="fl_${f.id}" type="text" maxlength="40" placeholder="Ex.: Nome completo">
-          <span class="char-count" id="cc_${f.id}">${META_LABEL_MAX}</span>
+          ${f.type==='consent'
+            ? `<textarea class="ipt" id="fl_${f.id}" rows="3" maxlength="${labelMax(f.type)}" style="min-height:84px;resize:vertical" placeholder="Ex.: Aceito os termos de uso e a política de privacidade"></textarea>`
+            : `<input class="ipt" id="fl_${f.id}" type="text" maxlength="${labelMax(f.type)}" placeholder="Ex.: Nome completo">`}
+          <span class="char-count" id="cc_${f.id}">${labelMax(f.type)}</span>
         </div>
         ${f.type==='short'?`<div class="field-row">
           <label class="field-label">Tipo de entrada</label>
@@ -927,6 +948,11 @@ function buildFieldCard(f) {
             </select>
             <i class="ph ph-caret-down"></i>
           </div>
+        </div>`:''}
+        ${HAS_INSTRUCTION.includes(f.type)?`<div class="field-row span2">
+          <label class="field-label">Instruções <span class="opt-tag">· Opcional</span></label>
+          <textarea class="ipt" id="fi_${f.id}" rows="2" maxlength="${INSTRUCTION_MAX}" style="min-height:56px;resize:vertical" placeholder="Texto de apoio exibido abaixo do campo"></textarea>
+          <span class="char-count" id="ic_${f.id}">${INSTRUCTION_MAX}</span>
         </div>`:''}
       </div>
       <div class="toggle-row">
@@ -938,12 +964,19 @@ function buildFieldCard(f) {
   </div>`;
 }
 
-/* Limite Meta: label e título de opção = 40 caracteres (fixo) */
-const META_LABEL_MAX = 40;
-function updateCharCount(elId, value){
+/* Limites de caracteres por tipo de campo (Meta) */
+const LABEL_MAX = {short:20, text:20, radio:30, checkbox:30, dropdown:30, date:20, consent:300};
+const OPTION_MAX = 30;
+const SUBMIT_MAX = 30;
+const INSTRUCTION_MAX = 80;
+/* Tipos que exibem o campo opcional de Instruções */
+const HAS_INSTRUCTION = ['short','text','date'];
+const META_LABEL_MAX = 40; /* fallback */
+function labelMax(type){return LABEL_MAX[type]||META_LABEL_MAX;}
+function updateCharCount(elId, value, max){
   const el=document.getElementById(elId);
   if(!el)return;
-  const remaining=Math.max(0, META_LABEL_MAX-(value||'').length);
+  const remaining=Math.max(0, (max||META_LABEL_MAX)-(value||'').length);
   el.textContent=remaining;
 }
 
@@ -1026,6 +1059,14 @@ function updatePreview() {
   bFields.forEach(f=>{
     const lbl=f.label||'(campo sem label)';
     const req=f.required?'<span class="req"></span>':'';
+    if(f.type==='consent'){
+      const ctext=f.label||'Aceito os termos e condições';
+      html+=`<div class="wa-field"><div class="wa-check-opt" style="align-items:flex-start">
+        <div class="wa-check-box" style="margin-top:2px;flex-shrink:0"></div>
+        <span>${esc(ctext)} ${req}</span>
+      </div></div>`;
+      return;
+    }
     html+=`<div class="wa-field"><div class="wa-field-label">${esc(lbl)} ${req}</div>`;
     if(f.type==='short')
       html+=`<div class="wa-input" style="color:#aaa">${SHORT_PLACEHOLDER[f.subtype]||'Digite aqui…'}</div>`;
@@ -1039,6 +1080,8 @@ function updatePreview() {
       html+=f.options.slice(0,3).map(o=>`<div class="wa-radio-opt"><div class="wa-radio-dot"></div>${esc(o||'Opção')}</div>`).join('');
     else if(f.type==='checkbox')
       html+=f.options.slice(0,3).map(o=>`<div class="wa-check-opt"><div class="wa-check-box"></div>${esc(o||'Opção')}</div>`).join('');
+    if(f.instruction)
+      html+=`<div style="font-size:11px;color:#888;margin-top:2px">${esc(f.instruction)}</div>`;
     html+=`</div>`;
   });
   if(submit)html+=`<div class="wa-footer">${esc(submit)}</div>`;
