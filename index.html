@@ -14,8 +14,11 @@
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:14px 24px;background:var(--background-color-lightest);
   border-bottom:1px solid var(--neutral-color-high-medium);flex-shrink:0;
+  position:relative;
 }
 .breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;}
+.draft-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--feedback-color-success-pure,#1f9d55);white-space:nowrap;}
+.draft-status i{font-size:15px;}
 .back-btn{
   display:inline-flex;align-items:center;justify-content:center;
   width:32px;height:32px;border-radius:var(--r-sm);border:none;
@@ -316,6 +319,9 @@
             <i class="ph ph-caret-right bc-sep"></i>
             <span class="bc-cur" id="bCrumb">Novo flow</span>
           </div>
+          <span class="draft-status" id="draftStatus" style="display:none">
+            <i class="ph ph-check-circle"></i> Rascunho salvo
+          </span>
           <div class="builder-actions">
             <!-- ANGULAR: <ccm-button type="secondary"> -->
             <button class="btn btn-sec" onclick="saveDraft()">
@@ -819,6 +825,8 @@ let saveTimer;
 function autosaveNow() {
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{},900);
+  const s=document.getElementById('draftStatus');
+  if(s)s.style.display='none';
 }
 
 /* ── FIELDS ── */
@@ -934,7 +942,7 @@ function buildFieldCard(f) {
     <div class="field-card-body" id="fb_${f.id}">
       <div class="fields-grid">
         <div class="field-row span2">
-          <label class="field-label">Label <span class="req"></span></label>
+          <label class="field-label">${f.type==='consent'?'Descrição':'Título'} <span class="req"></span></label>
           ${f.type==='consent'
             ? `<textarea class="ipt" id="fl_${f.id}" rows="3" maxlength="${labelMax(f.type)}" style="min-height:84px;resize:vertical" placeholder="Ex.: Aceito os termos de uso e a política de privacidade"></textarea>`
             : `<input class="ipt" id="fl_${f.id}" type="text" maxlength="${labelMax(f.type)}" placeholder="Ex.: Nome completo">`}
@@ -1141,7 +1149,12 @@ function closePubError(){
   showListing();
 }
 
-function saveDraft(){autosaveNow();toast('ok','Rascunho salvo');}
+function saveDraft(){
+  autosaveNow();
+  const s=document.getElementById('draftStatus');
+  if(s)s.style.display='';
+  toast('ok','Rascunho salvo');
+}
 
 /* ════════════════════════════════════════════════════════════
    TOAST & MODAL UTILS
