@@ -297,7 +297,8 @@ input,select,textarea{font-family:inherit;}
 }
 .ico-btn:last-child{margin-right:0;}
 .ico-btn:hover{background:var(--neutral-color-high-light);color:var(--neutral-color-low-pure);}
-.ico-btn.danger:hover{background:var(--feedback-color-warning-light);color:var(--feedback-color-warning-pure);}
+.ico-btn.danger{color:var(--neutral-color-low-pure);}
+.ico-btn.danger:hover{background:var(--neutral-color-high-light);color:var(--neutral-color-low-pure);}
 
 /* ── TABLE FOOTER ────────────────────────────────────────── */
 .tfoot{
@@ -307,20 +308,27 @@ input,select,textarea{font-family:inherit;}
 }
 .pagination{display:flex;align-items:center;gap:3px;}
 .pgbtn{
-  min-width:28px;height:28px;padding:0 6px;
-  border-radius:6px;border:1px solid var(--neutral-color-high-medium);
-  background:var(--background-color-lightest);color:var(--neutral-color-low-medium);
+  min-width:24px;height:28px;padding:0 4px;
+  border:none;background:transparent;color:var(--neutral-color-low-light);
   display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-family:inherit;cursor:pointer;transition:.1s;
+  font-size:13px;font-family:inherit;cursor:pointer;transition:color .1s;
 }
-.pgbtn:hover:not(:disabled){border-color:var(--brand-color-primary-pure);color:var(--brand-color-primary-pure);}
-.pgbtn.on{background:var(--brand-color-primary-pure);border-color:var(--brand-color-primary-pure);color:#fff;}
-.pgbtn:disabled{opacity:.4;cursor:default;}
-.per-page{display:flex;align-items:center;gap:6px;}
+.pgbtn:hover:not(:disabled){color:var(--neutral-color-low-pure);}
+.pgbtn:disabled{opacity:.35;cursor:default;}
+.pg-cur{
+  min-width:28px;height:28px;padding:0 10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;color:var(--neutral-color-low-pure);
+}
+.pg-label{font-size:12px;color:var(--neutral-color-low-light);white-space:nowrap;}
+.per-page{display:flex;align-items:center;}
 .per-page select{
   height:28px;border:1px solid var(--neutral-color-high-medium);border-radius:6px;
-  padding:0 8px;font-size:12px;font-family:inherit;
+  padding:0 24px 0 10px;font-size:12px;font-family:inherit;
   color:var(--neutral-color-low-medium);background:var(--background-color-lightest);outline:none;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 256 256'%3E%3Cpath fill='%239ca3af' d='m213.66 101.66-80 80a8 8 0 0 1-11.32 0l-80-80A8 8 0 0 1 53.66 90.34L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
 }
 
 /* ── BUTTONS ─────────────────────────────────────────────── */
@@ -376,6 +384,10 @@ input,select,textarea{font-family:inherit;}
 .modal-alert.warn i{color:var(--feedback-color-helper-pure);font-size:16px;flex-shrink:0;margin-top:1px;}
 .modal-alert.info{background:var(--brand-color-secundary-lightest);border:1px solid var(--brand-color-secundary-pure);color:var(--brand-color-secundary-dark);}
 .modal-alert.info i{color:var(--brand-color-secundary-pure);font-size:16px;flex-shrink:0;margin-top:1px;}
+.modal-alert.err{background:var(--feedback-color-warning-light);border:1px solid var(--feedback-color-warning-pure);color:var(--feedback-color-warning-dark);}
+.modal-alert.err i{color:var(--feedback-color-warning-pure);font-size:16px;flex-shrink:0;margin-top:1px;}
+.err-reasons{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px;}
+.err-reasons li{font-size:12.5px;line-height:1.45;}
 .modal-ftr{
   padding:8px 28px 28px;
   display:flex;align-items:center;justify-content:flex-end;gap:8px;
@@ -409,11 +421,20 @@ input,select,textarea{font-family:inherit;}
 
 /* ── FORM FIELDS (builder) ───────────────────────────────── */
 .field-row{display:flex;flex-direction:column;gap:5px;}
+.char-count{
+  display:block;font-size:12px;color:var(--neutral-color-low-medium);
+  text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;margin-top:2px;
+}
 .field-label{
   font-size:11px;font-weight:600;color:var(--neutral-color-low-light);
   text-transform:uppercase;letter-spacing:.06em;
 }
-.field-label span.req{color:var(--feedback-color-warning-pure);margin-left:2px;}
+.field-label span.req{margin-left:2px;}
+.req::after{
+  content:"*";
+  color:var(--feedback-color-helper-pure);
+  font-weight:bolder;
+}
 .ipt{
   width:100%;height:40px;border:1px solid var(--neutral-color-high-medium);
   border-radius:var(--r-md);padding:0 14px;
