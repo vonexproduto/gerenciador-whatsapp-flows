@@ -11,13 +11,27 @@
 [ ] Criar flow com todos os campos obrigatórios e 1 campo de tela
     Entrada: {
       name: "Pesquisa de satisfação",
+      category: "Questionário",
       number: "11 3777-1887",
       title: "Como foi seu atendimento?",
       submitButtonText: "Enviar resposta",
       confirmationMessage: null,
-      fields: [{ type: "text", label: "Avaliação", required: true, options: [] }]
+      fields: [{ type: "short", label: "Avaliação", inputType: "text", required: true, options: [] }]
     }
-    Esperado: HTTP 201 · { id: <uuid>, status: "rascunho", createdAt: <datetime>, name: "Pesquisa de satisfação", ... }
+    Esperado: HTTP 201 · { id: <uuid>, status: "rascunho", createdAt: <datetime>, name: "Pesquisa de satisfação", category: "Questionário", ... }
+
+[ ] Criar flow sem o campo "category"
+    Entrada: { name: "Flow X", number: "11 3777-1887", title: "Tela", submitButtonText: "Enviar" }
+    Esperado: HTTP 422 · { errors: [{ field: "category", message: "Categoria do flow é obrigatória" }] }
+
+[ ] Criar flow com category fora do enum
+    Entrada: { name: "Flow X", category: "Inexistente", number: "11 3777-1887", title: "Tela", submitButtonText: "Enviar" }
+    Esperado: HTTP 422 · { errors: [{ field: "category", message: "Categoria inválida" }] }
+    # enum: Cadastro · Login · Agendamento · Geração de Leads · Contate-me · Suporte ao cliente · Questionário · Outros
+
+[ ] Criar flow com submitButtonText acima de 30 caracteres
+    Entrada: { ...dados válidos..., submitButtonText: "Texto de botão muito longo que excede" }
+    Esperado: HTTP 422 · { errors: [{ field: "submitButtonText", message: "Máximo de 30 caracteres" }] }
 
 [ ] Criar flow com mensagem de confirmação preenchida
     Entrada: { ...dados obrigatórios..., confirmationMessage: "Obrigado pelo seu contato!" }
@@ -57,11 +71,12 @@
 
 [ ] Criar flow com múltiplos campos de diferentes tipos
     Entrada: { ...dados obrigatórios..., fields: [
-      { type: "text", label: "Nome", required: true, options: [] },
+      { type: "short", label: "Nome", inputType: "text", required: true, options: [] },
       { type: "radio", label: "Motivo", required: true, options: ["Negociação", "Dúvida"] },
-      { type: "date", label: "Data de nascimento", required: false, options: [] }
+      { type: "date", label: "Data de nasc.", required: false, options: [] },
+      { type: "consent", label: "Aceito os termos", required: true, options: [] }
     ]}
-    Esperado: HTTP 201 · { fields: [<3 campos com ids gerados e order correto>] }
+    Esperado: HTTP 201 · { fields: [<4 campos com ids gerados e order correto>] }
 ```
 
 ---
@@ -326,9 +341,29 @@
     Entrada: GET /flows/999/fields
     Esperado: HTTP 404 · { error: "Flow não encontrado" }
 
-[ ] Criar campo do tipo "text" em flow "rascunho"
-    Entrada: POST /flows/2/fields · { type: "text", label: "Nome completo", required: true }
-    Esperado: HTTP 201 · { id: <uuid>, flowId: 2, type: "text", label: "Nome completo", required: true, order: <próximo>, options: [] }
+[ ] Criar campo do tipo "short" (Resposta curta) em flow "rascunho"
+    Entrada: POST /flows/2/fields · { type: "short", label: "Nome completo", inputType: "text", required: true }
+    Esperado: HTTP 201 · { id: <uuid>, flowId: 2, type: "short", label: "Nome completo", inputType: "text", required: true, order: <próximo>, options: [] }
+
+[ ] Criar campo "short" com cada subtipo (inputType) válido
+    Entrada: POST /flows/2/fields · { type: "short", label: "Campo", inputType: <"text"|"email"|"number"|"phone"|"password"|"passcode"> }
+    Esperado: HTTP 201 · { type: "short", inputType: <valor informado> }
+
+[ ] Criar campo "short" com inputType inválido
+    Entrada: POST /flows/2/fields · { type: "short", label: "Campo", inputType: "cpf" }
+    Esperado: HTTP 422 · { errors: [{ field: "inputType", message: "Tipo de entrada inválido" }] }
+
+[ ] Criar campo do tipo "text" (Resposta longa) em flow "rascunho"
+    Entrada: POST /flows/2/fields · { type: "text", label: "Comentários", required: false }
+    Esperado: HTTP 201 · { type: "text", options: [] }  (texto livre, sem subtipo)
+
+[ ] Criar campo do tipo "consent" (Campo de consentimento)
+    Entrada: POST /flows/2/fields · { type: "consent", label: "Aceito os termos de uso", required: true }
+    Esperado: HTTP 201 · { type: "consent", options: [] }
+
+[ ] Adicionar instrução opcional a campo short/text/date
+    Entrada: PATCH /flows/2/fields/1 · { instruction: "Informe seu nome completo" }
+    Esperado: HTTP 200 · { instruction: "Informe seu nome completo" }
 
 [ ] Criar campo do tipo "radio" com 2 opções
     Entrada: POST /flows/2/fields · { type: "radio", label: "Motivo", required: true, options: ["Negociação", "Dúvida"] }
@@ -397,6 +432,14 @@
 [ ] Remover opção de campo com apenas 2 opções — bloqueado
     Entrada: DELETE /flows/2/fields/3/options/2  (campo com 2 opções)
     Esperado: HTTP 422 · { error: "Mínimo de 2 opções para este tipo de campo" }
+
+[ ] Adicionar 6ª opção em campo "radio" — bloqueado (máximo 5)
+    Entrada: POST /flows/2/fields/3/options · { value: "Sexta" }  (campo radio com 5 opções)
+    Esperado: HTTP 422 · { error: "Máximo de 5 opções em Seleção única" }
+
+[ ] Máximo de 5 opções não se aplica a "checkbox" nem "dropdown"
+    Entrada: POST /flows/2/fields/4/options · { value: "Sexta" }  (campo checkbox com 5 opções)
+    Esperado: HTTP 201 · campo passa a ter 6 opções
 ```
 
 ---
@@ -427,6 +470,11 @@
 [ ] Validar que tipo de campo inválido é rejeitado
     Entrada: POST /flows/:id/fields · { type: "invalid_type", label: "Campo" }
     Esperado: HTTP 422 · { errors: [{ field: "type", message: "Tipo de campo inválido" }] }
+    # enum válido: short · text · radio · checkbox · dropdown · date · consent
+
+[ ] Validar que campos short, consent e text não exigem options
+    Entrada: POST /flows/:id/fields · { type: "consent", label: "Aceito os termos" }
+    Esperado: HTTP 201 · { options: [] }
 
 [ ] Validar que options com valores em branco são considerados ausentes para radio/checkbox/dropdown
     Entrada: POST /flows/:id/publish  (campo radio com options: ["", ""])
@@ -592,4 +640,72 @@
 
 ---
 
-*Documento gerado em 28/05/2026 — Referência: CCM-2743*
+## 12. Testes de Limites de Caracteres
+
+```
+# Limites por tipo:
+#   label short/text/date         → 20
+#   label radio/checkbox/dropdown → 30
+#   label consent (descrição)     → 300
+#   título de opção               → 30
+#   submitButtonText              → 30
+#   instruction (opcional)        → 80
+
+[ ] Label de campo short acima de 20 caracteres
+    Entrada: PATCH /flows/2/fields/1 · { label: "Nome completo do cliente aqui" }  (type short)
+    Esperado: HTTP 422 · { errors: [{ field: "label", message: "Máximo de 20 caracteres" }] }
+
+[ ] Label de campo radio acima de 30 caracteres
+    Entrada: POST /flows/2/fields · { type: "radio", label: "<31+ caracteres>", options: ["A", "B"] }
+    Esperado: HTTP 422 · { errors: [{ field: "label", message: "Máximo de 30 caracteres" }] }
+
+[ ] Título de opção acima de 30 caracteres
+    Entrada: POST /flows/2/fields · { type: "dropdown", label: "Estado", options: ["<31+ caracteres>", "SP"] }
+    Esperado: HTTP 422 · { errors: [{ field: "options", message: "Máximo de 30 caracteres por opção" }] }
+
+[ ] Descrição (label) de campo consent acima de 300 caracteres
+    Entrada: POST /flows/2/fields · { type: "consent", label: "<301+ caracteres>" }
+    Esperado: HTTP 422 · { errors: [{ field: "label", message: "Máximo de 300 caracteres" }] }
+
+[ ] submitButtonText acima de 30 caracteres
+    Entrada: PATCH /flows/2 · { submitButtonText: "<31+ caracteres>" }
+    Esperado: HTTP 422 · { errors: [{ field: "submitButtonText", message: "Máximo de 30 caracteres" }] }
+
+[ ] instruction acima de 80 caracteres
+    Entrada: PATCH /flows/2/fields/1 · { instruction: "<81+ caracteres>" }
+    Esperado: HTTP 422 · { errors: [{ field: "instruction", message: "Máximo de 80 caracteres" }] }
+
+[ ] Valores dentro do limite são aceitos
+    Entrada: campos com label/opção/instrução/botão exatamente no limite máximo
+    Esperado: HTTP 200/201 (sem erro de validação)
+```
+
+---
+
+## 13. Testes de Erro de Publicação (retorno da Meta)
+
+```
+[ ] Publicação rejeitada pela Meta — flow vai para status "erro"
+    Entrada: POST /flows/2/publish  (validação interna OK, Meta retorna erro)
+    Esperado: HTTP 200/422 · { status: "erro", publishError: { reasons: [<lista de motivos>] } }
+    # Front exibe status "Erro de publicação"
+
+[ ] Resposta de erro inclui título, subtítulo e lista de motivos
+    Entrada: POST /flows/2/publish (rejeitado pela Meta)
+    Esperado: payload com:
+      title: "Erro de publicação"
+      subtitle: "Não foi possível realizar a publicação. Verifique e corrija os motivos retornados e tente novamente."
+      reasons: [ "JSON do Flow inválido...", "Categoria incompatível...", "WABA não verificado...", ... ]
+
+[ ] Flow em "erro" pode ser corrigido e republicado com sucesso
+    Entrada: PATCH /flows/2 (corrige dados) → POST /flows/2/publish (Meta aceita)
+    Esperado: HTTP 200 · { status: "publicado" }
+
+[ ] Flow em "erro" mantém ações: editar, duplicar, excluir
+    Entrada: GET /flows/2  (status "erro")
+    Esperado: HTTP 200 · ações disponíveis = [editar, duplicar, excluir]
+```
+
+---
+
+*Documento gerado em 28/05/2026 · Atualizado em 11/06/2026 — Referência: CCM-2743*

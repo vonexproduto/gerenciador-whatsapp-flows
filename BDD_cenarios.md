@@ -173,14 +173,34 @@ Feature: Criação de Flow
   Scenario: Criar flow com todos os campos obrigatórios e mínimo de 1 campo
     Dado que forneço os dados:
       | name          | "Pesquisa de satisfação"      |
+      | category      | "Questionário"                |
       | number        | "11 3777-1887"                |
       | title         | "Como foi seu atendimento?"   |
       | submitButtonText | "Enviar resposta"            |
-    E adiciono 1 campo do tipo "text" com label "Avaliação"
+    E adiciono 1 campo do tipo "short" com label "Avaliação"
     Quando submeto a criação do flow
     Então o flow é criado com status "rascunho"
-    E o flow retorna id, name, number, title, submitButtonText, status e createdAt
+    E o flow retorna id, name, category, number, title, submitButtonText, status e createdAt
     E a resposta tem status HTTP 201
+
+  Scenario: Categoria é obrigatória e aceita apenas valores do enum
+    Dado que forneço os dados obrigatórios do flow
+    E informo category com um dos valores: "Cadastro", "Login", "Agendamento", "Geração de Leads", "Contate-me", "Suporte ao cliente", "Questionário" ou "Outros"
+    Quando submeto a criação
+    Então o flow é criado com a categoria informada
+    E a resposta tem status HTTP 201
+
+  Scenario: Falha ao criar flow sem o campo "category"
+    Dado que não informo a categoria do flow
+    Quando submeto a criação do flow
+    Então recebo status HTTP 422
+    E a resposta indica que o campo "category" é obrigatório
+
+  Scenario: Falha ao criar flow com categoria fora do enum
+    Dado que informo category com valor "Categoria Inexistente"
+    Quando submeto a criação do flow
+    Então recebo status HTTP 422
+    E a resposta indica que a categoria informada é inválida
 
   Scenario: Criar flow com mensagem de confirmação opcional
     Dado que forneço os dados obrigatórios do flow
@@ -281,11 +301,53 @@ Feature: Gerenciamento de Campos
   Quero gerenciar os campos de um flow
   Para compor o formulário que será exibido no WhatsApp
 
-  Scenario: Adicionar campo do tipo "text" a um flow
+  # Tipos de campo disponíveis (MVP):
+  #   short    → Resposta curta (TextInput)
+  #   text     → Resposta longa (TextArea)
+  #   radio    → Seleção única (RadioButtonsGroup)
+  #   checkbox → Múltipla escolha (CheckboxGroup)
+  #   dropdown → Dropdown
+  #   date     → Data (DatePicker)
+  #   consent  → Campo de consentimento (OptIn)
+
+  Scenario: Adicionar campo do tipo "short" (Resposta curta) a um flow
     Dado que existe um flow em modo de edição
-    Quando adiciono um campo com type "text" e label "Nome completo"
+    Quando adiciono um campo com type "short" e label "Nome completo"
     Então o campo é criado com required=true por padrão
+    E o campo é criado com inputType "text" por padrão
     E o campo é adicionado ao final da lista de campos do flow
+
+  Scenario: Definir o subtipo de um campo "short"
+    Dado que existe um campo do tipo "short"
+    Quando defino o inputType como um dos valores: "text", "email", "number", "phone", "password" ou "passcode"
+    Então o campo é atualizado com o inputType informado
+
+  Scenario: Falha ao definir inputType fora do enum em campo "short"
+    Dado que existe um campo do tipo "short"
+    Quando defino o inputType como "cpf"
+    Então recebo status HTTP 422
+    E a resposta indica que o inputType informado é inválido
+
+  Scenario: Adicionar campo do tipo "text" (Resposta longa) a um flow
+    Dado que existe um flow em modo de edição
+    Quando adiciono um campo com type "text" e label "Comentários"
+    Então o campo é criado como texto livre (multi-linha), sem subtipo e sem opções
+
+  Scenario: Adicionar campo do tipo "consent" (Campo de consentimento)
+    Dado que existe um flow em modo de edição
+    Quando adiciono um campo com type "consent" e label "Aceito os termos de uso"
+    Então o campo é criado sem opções
+    E o label (descrição do consentimento) aceita até 300 caracteres
+
+  Scenario: Adicionar instruções opcionais a campos short, text e date
+    Dado que existe um campo do tipo "short", "text" ou "date"
+    Quando informo o campo opcional "instruction" com até 80 caracteres
+    Então o campo é salvo com a instrução
+    E a instrução é exibida como texto de apoio abaixo do campo
+
+  Scenario: Instrução não é permitida em tipos que não a suportam
+    Dado que existe um campo do tipo "consent"
+    Então o campo não expõe o atributo opcional "instruction"
 
   Scenario: Adicionar campo do tipo "radio" com 2 opções
     Dado que existe um flow em edição
@@ -314,6 +376,13 @@ Feature: Gerenciamento de Campos
     Então recebo status HTTP 422
     E a resposta indica que este tipo de campo exige ao menos 2 opções
 
+  Scenario: Campo "radio" (Seleção única) limita a 5 opções
+    Dado que existe um campo do tipo "radio" com 5 opções
+    Quando tento adicionar uma 6ª opção
+    Então a operação é bloqueada
+    E a resposta indica o máximo de 5 opções em Seleção única
+    E o limite de 5 opções não se aplica a "checkbox" nem a "dropdown"
+
   Scenario: Falha ao criar campo sem label
     Dado que existe um flow em edição
     Quando adiciono um campo sem informar o label
@@ -340,6 +409,12 @@ Feature: Gerenciamento de Campos
     Quando solicito mover o "Campo B" para baixo
     Então a ordem permanece inalterada [Campo A, Campo B]
 
+  Scenario: Reordenar campos por arrastar e soltar (drag-and-drop)
+    Dado que um flow possui campos na ordem [Campo A, Campo B, Campo C]
+    Quando seguro o campo "Campo C" pela alça e solto sobre a posição do "Campo A"
+    Então a ordem é atualizada refletindo a nova posição
+    E a nova ordem (order) é persistida via autosave
+
   Scenario: Remover campo de um flow
     Dado que um flow possui 3 campos
     Quando removo o segundo campo
@@ -362,6 +437,61 @@ Feature: Gerenciamento de Campos
     Quando tento remover uma opção
     Então recebo erro indicando que o mínimo de 2 opções deve ser respeitado
     E a opção não é removida
+```
+
+---
+
+## Feature: Limites de Caracteres dos Campos
+
+```gherkin
+Feature: Limites de Caracteres dos Campos
+  Como sistema
+  Quero aplicar os limites de caracteres definidos pela Meta a cada campo
+  Para garantir que os flows publicados respeitem as regras dos componentes
+
+  # Limites de label por tipo:
+  #   short / text / date          → 20 caracteres
+  #   radio / checkbox / dropdown  → 30 caracteres
+  #   consent (descrição)          → 300 caracteres
+  # Título de opção (radio/checkbox/dropdown) → 30 caracteres
+  # Texto do botão de envio (submitButtonText) → 30 caracteres
+  # Instrução opcional (short/text/date)       → 80 caracteres
+
+  Scenario: Label de short/text/date limitado a 20 caracteres
+    Dado que existe um campo do tipo "short", "text" ou "date"
+    Quando informo um label com mais de 20 caracteres
+    Então recebo status HTTP 422
+    E a resposta indica que o label excede o limite de 20 caracteres
+
+  Scenario: Label de radio/checkbox/dropdown limitado a 30 caracteres
+    Dado que existe um campo do tipo "radio", "checkbox" ou "dropdown"
+    Quando informo um label com mais de 30 caracteres
+    Então recebo status HTTP 422
+    E a resposta indica que o label excede o limite de 30 caracteres
+
+  Scenario: Título de opção limitado a 30 caracteres
+    Dado que existe um campo do tipo "radio", "checkbox" ou "dropdown"
+    Quando informo o título de uma opção com mais de 30 caracteres
+    Então recebo status HTTP 422
+    E a resposta indica que a opção excede o limite de 30 caracteres
+
+  Scenario: Descrição do campo de consentimento limitada a 300 caracteres
+    Dado que existe um campo do tipo "consent"
+    Quando informo um label (descrição) com mais de 300 caracteres
+    Então recebo status HTTP 422
+    E a resposta indica que a descrição excede o limite de 300 caracteres
+
+  Scenario: Texto do botão de envio limitado a 30 caracteres
+    Dado que estou editando um flow
+    Quando informo submitButtonText com mais de 30 caracteres
+    Então recebo status HTTP 422
+    E a resposta indica que o texto do botão excede o limite de 30 caracteres
+
+  Scenario: Instrução opcional limitada a 80 caracteres
+    Dado que existe um campo do tipo "short", "text" ou "date"
+    Quando informo instruction com mais de 80 caracteres
+    Então recebo status HTTP 422
+    E a resposta indica que a instrução excede o limite de 80 caracteres
 ```
 
 ---
@@ -392,6 +522,11 @@ Feature: Validação para Publicação
     Quando solicito publicação
     Então recebo erro: "Nome do flow é obrigatório"
     E o status do flow não é alterado
+
+  Scenario: Falha de validação — categoria não selecionada
+    Dado que o flow não possui categoria selecionada
+    Quando solicito publicação
+    Então recebo erro: "Categoria do flow é obrigatória"
 
   Scenario: Falha de validação — número não selecionado
     Dado que o flow não possui número do WhatsApp vinculado
@@ -480,6 +615,45 @@ Feature: Publicação de Flow
     Quando tento editar qualquer campo do flow
     Então recebo status HTTP 409
     E a resposta indica que o flow está publicado e não pode ser alterado
+```
+
+---
+
+## Feature: Erro de Publicação retornado pela Meta
+
+```gherkin
+Feature: Erro de Publicação retornado pela Meta
+  Como sistema
+  Quero tratar os erros retornados pela API da Meta durante a publicação
+  Para que o usuário entenda o motivo e possa corrigir o flow
+
+  Scenario: Publicação rejeitada pela Meta após confirmação
+    Dado que um flow passou na validação interna
+    E confirmei o envio para publicação
+    Quando a Meta retorna erro no processamento do flow
+    Então a publicação é impedida
+    E o status do flow passa a "erro" (exibido como "Erro de publicação")
+    E o sistema apresenta o título "Erro de publicação"
+    E o sistema apresenta o subtítulo "Não foi possível realizar a publicação. Verifique e corrija os motivos retornados e tente novamente."
+    E o sistema lista os "Motivos de erro de publicação" retornados pela Meta
+
+  Scenario: Motivos de erro possíveis retornados pela Meta
+    Dado que a publicação foi rejeitada pela Meta
+    Quando consulto os motivos retornados
+    Então a lista pode conter, entre outros:
+      | JSON do Flow inválido ou fora do padrão exigido pela Meta              |
+      | Categoria do Flow incompatível com o conteúdo enviado                  |
+      | Número de WhatsApp (WABA) não verificado ou sem permissão para Flows   |
+      | Rótulo (label) de campo excedendo o limite de caracteres              |
+      | Campo obrigatório sem rótulo ou sem opções definidas                  |
+      | Já existe um Flow publicado com este nome na conta                     |
+      | Instabilidade temporária na API da Meta                               |
+
+  Scenario: Flow com erro pode ser corrigido e republicado
+    Dado que um flow está com status "erro" após rejeição da Meta
+    Quando corrijo os motivos apontados e solicito publicação novamente
+    E a Meta aceita o flow
+    Então o status do flow passa para "publicado"
 ```
 
 ---
@@ -699,6 +873,18 @@ Feature: Autosave de Rascunho
     Dado que um flow está em status "rascunho"
     Quando o autosave é executado
     Então o flow permanece com status "rascunho"
+
+  Scenario: Salvamento manual exibe confirmação "Rascunho salvo"
+    Dado que estou editando um flow em rascunho
+    Quando clico no botão "Salvar rascunho"
+    Então as alterações são persistidas
+    E o cabeçalho exibe o indicador "Rascunho salvo"
+
+  Scenario: Indicador "Rascunho salvo" é ocultado ao haver novas edições
+    Dado que o indicador "Rascunho salvo" está visível
+    Quando realizo uma nova edição em qualquer campo
+    Então o indicador "Rascunho salvo" deixa de ser exibido
+    E sinaliza que há alterações ainda não salvas
 ```
 
 ---
@@ -761,4 +947,4 @@ Feature: Controle de Acesso por Status
 
 ---
 
-*Documento gerado em 28/05/2026 — Referência: CCM-2743*
+*Documento gerado em 28/05/2026 · Atualizado em 11/06/2026 — Referência: CCM-2743*
