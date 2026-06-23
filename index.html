@@ -1260,15 +1260,18 @@ function updatePreview() {
       </div></div>`;
       return;
     }
-    html+=`<div class="wa-field"><div class="wa-field-label">${esc(lbl)} ${req}</div>`;
+    // short/text/date/dropdown: o Título funciona como placeholder do campo (vazio se não preenchido), sem label acima
+    const usePlaceholder = ['short','text','date','dropdown'].includes(f.type);
+    const ph = usePlaceholder ? esc(f.label||'') : '';
+    html+=`<div class="wa-field">${usePlaceholder?'':`<div class="wa-field-label">${esc(lbl)} ${req}</div>`}`;
     if(f.type==='short')
-      html+=`<div class="wa-input" style="color:#aaa">${SHORT_PLACEHOLDER[f.subtype]||'Digite aqui…'}</div>`;
+      html+=`<div class="wa-input" style="color:#aaa">${ph}</div>`;
     else if(f.type==='text')
-      html+=`<div class="wa-input" style="color:#aaa;min-height:48px;align-items:flex-start;padding-top:8px">Digite aqui…</div>`;
+      html+=`<div class="wa-input" style="color:#aaa;min-height:48px;align-items:flex-start;padding-top:8px">${ph}</div>`;
     else if(f.type==='date')
-      html+=`<div class="wa-date"><span style="color:#aaa">DD/MM/AAAA</span><i class="ph ph-calendar" style="color:#aaa;font-size:14px"></i></div>`;
+      html+=`<div class="wa-date"><span style="color:#aaa">${ph}</span><i class="ph ph-calendar" style="color:#aaa;font-size:14px"></i></div>`;
     else if(f.type==='dropdown')
-      html+=`<div class="wa-select"><span style="color:#aaa">${esc(f.options.find(o=>o)||'Selecione…')}</span><i class="ph ph-caret-down" style="color:#aaa;font-size:12px"></i></div>`;
+      html+=`<div class="wa-select"><span style="color:#aaa">${ph}</span><i class="ph ph-caret-down" style="color:#aaa;font-size:12px"></i></div>`;
     else if(f.type==='radio')
       html+=f.options.slice(0,3).map(o=>`<div class="wa-radio-opt"><div class="wa-radio-dot"></div>${esc(o||'Opção')}</div>`).join('');
     else if(f.type==='checkbox')
