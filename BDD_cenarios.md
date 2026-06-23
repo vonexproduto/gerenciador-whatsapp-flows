@@ -28,9 +28,9 @@ Feature: Listagem de Flows
     Quando solicito a listagem de flows
     Então cada flow possui o campo status com um dos valores permitidos
     E flows com status "publicado" exibem as ações: visualizar, depreciar e duplicar
-    E flows com status "rascunho" exibem as ações: editar, duplicar e excluir
-    E flows com status "depreciado" não exibem nenhuma ação disponível
-    E flows com status "erro" exibem as ações: editar, duplicar e excluir
+    E flows com status "rascunho" exibem as ações: editar, excluir e duplicar
+    E flows com status "depreciado" exibem as ações: visualizar, duplicar e excluir
+    E flows com status "erro" exibem as ações: editar, excluir e duplicar
 
   Scenario: Listagem vazia quando não há flows cadastrados
     Dado que não existe nenhum flow cadastrado
@@ -568,6 +568,44 @@ Feature: Validação para Publicação
     Quando o sistema exibe o resumo antes de confirmar a publicação
     Então o resumo contém a quantidade de campos do flow
     E o resumo contém o número do WhatsApp vinculado ao flow
+
+  Scenario: Botão "Publicar flow" desabilitado enquanto houver pendências
+    Dado que o flow possui ao menos um item obrigatório não preenchido
+    Quando visualizo o construtor
+    Então o botão "Publicar flow" está desabilitado
+    E somente é habilitado quando todas as pendências forem resolvidas
+
+  Scenario: Checklist "Etapas para publicar" agrupa pendências por categoria
+    Dado que existem itens obrigatórios não preenchidos
+    Quando passo o mouse sobre o botão "Publicar flow"
+    Então é exibido o checklist "Etapas para publicar"
+    E as pendências são agrupadas nas categorias "Configurações gerais" e "Campos da tela"
+    E cada categoria exibe um indicador verde (concluída) ou cinza (pendente)
+    E sob cada categoria pendente são listadas as subcategorias correspondentes
+
+  Scenario: Subcategorias de "Configurações gerais"
+    Dado que os dados gerais do flow estão vazios
+    Quando consulto o checklist de publicação
+    Então a categoria "Configurações gerais" lista, conforme o que faltar:
+      | Preencha o nome do flow            |
+      | Selecione a categoria              |
+      | Selecione um número de WhatsApp    |
+      | Preencha o título da tela          |
+      | Preencha o texto do botão de envio |
+
+  Scenario: Subcategorias dinâmicas de "Campos da tela" conforme os campos adicionados
+    Dado que o flow possui um campo de "Resposta curta" sem título
+    E possui um campo de "Seleção única" com menos de 2 opções
+    Quando consulto o checklist de publicação
+    Então a categoria "Campos da tela" lista "Preencha ou exclua o campo de resposta curta"
+    E lista "Adicione ao menos 2 opções no campo de seleção única"
+    E as mensagens são pluralizadas quando há mais de um campo do mesmo tipo
+
+  Scenario: Checklist totalmente concluído habilita a publicação
+    Dado que todos os itens das categorias "Configurações gerais" e "Campos da tela" estão concluídos
+    Quando consulto o checklist de publicação
+    Então todas as categorias exibem indicador verde (concluída)
+    E o botão "Publicar flow" é habilitado
 ```
 
 ---
@@ -734,11 +772,11 @@ Feature: Exclusão de Flow
     Então recebo status HTTP 409
     E a resposta indica que flows publicados não podem ser excluídos
 
-  Scenario: Tentar excluir flow "depreciado"
+  Scenario: Excluir flow com status "depreciado"
     Dado que existe um flow com status "depreciado"
-    Quando solicito a exclusão
-    Então recebo status HTTP 409
-    E a resposta indica que flows depreciados não podem ser excluídos
+    Quando confirmo a exclusão
+    Então o flow é removido permanentemente do sistema
+    E a resposta tem status HTTP 200 ou 204
 
   Scenario: Exclusão requer confirmação explícita
     Dado que existe um flow com status "rascunho"
@@ -788,11 +826,12 @@ Feature: Duplicação de Flow
     Então um novo flow é criado com sufixo " (cópia)" no nome
     E o novo flow possui status "rascunho"
 
-  Scenario: Tentar duplicar flow "depreciado"
+  Scenario: Duplicar flow "depreciado"
     Dado que existe um flow com status "depreciado"
     Quando solicito a duplicação
-    Então recebo status HTTP 409
-    E a resposta indica que flows depreciados não podem ser duplicados
+    Então um novo flow é criado com sufixo " (cópia)" no nome
+    E o novo flow possui status "rascunho"
+    E todos os campos e opções do flow original são copiados
 
   Scenario: Flow duplicado é independente do original
     Dado que um flow foi duplicado
@@ -899,22 +938,22 @@ Feature: Controle de Acesso por Status
 
   Scenario: Ações permitidas para flow em "rascunho"
     Dado que existe um flow com status "rascunho"
-    Então as seguintes ações estão disponíveis: editar, duplicar, excluir
-    E as seguintes ações estão bloqueadas: visualizar (como publicado), depreciar
+    Então as seguintes ações estão disponíveis: editar, excluir, duplicar
+    E as seguintes ações estão bloqueadas: visualizar (somente leitura), depreciar
 
   Scenario: Ações permitidas para flow "publicado"
     Dado que existe um flow com status "publicado"
     Então as seguintes ações estão disponíveis: visualizar, depreciar, duplicar
     E as seguintes ações estão bloqueadas: editar, excluir
 
-  Scenario: Nenhuma ação disponível para flow "depreciado"
+  Scenario: Ações permitidas para flow "depreciado"
     Dado que existe um flow com status "depreciado"
-    Então nenhuma ação está disponível para o flow
-    E qualquer tentativa de ação resulta em status HTTP 409
+    Então as seguintes ações estão disponíveis: visualizar, duplicar, excluir
+    E as seguintes ações estão bloqueadas: editar, depreciar (novamente), publicar
 
   Scenario: Ações permitidas para flow com status "erro"
     Dado que existe um flow com status "erro"
-    Então as seguintes ações estão disponíveis: editar, duplicar, excluir
+    Então as seguintes ações estão disponíveis: editar, excluir, duplicar
     E o flow pode ser corrigido e re-publicado
 
   Scenario: Transição válida — rascunho para publicado
@@ -947,4 +986,73 @@ Feature: Controle de Acesso por Status
 
 ---
 
-*Documento gerado em 28/05/2026 · Atualizado em 11/06/2026 — Referência: CCM-2743*
+## Feature: Seleção de Número do WhatsApp (WABA)
+
+```gherkin
+Feature: Seleção de Número do WhatsApp (WABA)
+  Como usuário do sistema
+  Quero selecionar o número do WhatsApp em um seletor padronizado
+  Para vincular o flow ao número correto com clareza sobre cada conta
+
+  Scenario: Listar números disponíveis no seletor
+    Dado que estou no construtor de um flow editável
+    Quando abro o seletor "Número do WhatsApp"
+    Então é exibida a lista de números WABA disponíveis
+    E cada item apresenta: nome da conta, número, categoria e quantidade de contatos
+
+  Scenario: Item sem categoria definida
+    Dado que existe um número WABA sem categoria associada
+    Quando abro o seletor
+    Então o item é exibido sem a linha de categoria, sem quebrar o layout
+
+  Scenario: Selecionar um número WABA
+    Dado que o seletor está aberto
+    Quando seleciono o item "Vonex · 11 97699-2942"
+    Então o seletor exibe o nome e o número escolhidos
+    E o valor é vinculado ao flow
+    E o autosave é acionado
+
+  Scenario: Seletor fecha ao escolher ou ao clicar fora
+    Dado que o seletor está aberto
+    Quando seleciono um item ou clico fora do seletor
+    Então a lista é fechada
+```
+
+---
+
+## Feature: Visualização de Flow (somente leitura)
+
+```gherkin
+Feature: Visualização de Flow (somente leitura)
+  Como usuário do sistema
+  Quero visualizar um flow sem permissão de edição
+  Para consultar o conteúdo de flows publicados ou depreciados com segurança
+
+  Scenario: Abrir flow "publicado" em modo somente leitura
+    Dado que existe um flow com status "publicado"
+    Quando aciono a ação "Visualizar"
+    Então o construtor é aberto em modo somente leitura
+    E todos os campos de input e select ficam desabilitados
+    E não são exibidos os botões de ação (Salvar rascunho e Publicar flow)
+
+  Scenario: Abrir flow "depreciado" em modo somente leitura
+    Dado que existe um flow com status "depreciado"
+    Quando aciono a ação "Visualizar"
+    Então o construtor é aberto em modo somente leitura
+    E o usuário consegue apenas consultar o conteúdo, sem alterá-lo
+
+  Scenario: Modo somente leitura oculta ações de edição de campos
+    Dado que estou visualizando um flow em modo somente leitura
+    Então não são exibidos: adicionar campo, excluir campo, reordenar (alça), adicionar/excluir opção
+    E o seletor de número e o toggle de obrigatório não são interativos
+
+  Scenario: Editar (não visualizar) mantém o construtor editável
+    Dado que existe um flow com status "rascunho" ou "erro"
+    Quando aciono a ação "Editar"
+    Então o construtor é aberto em modo de edição normal
+    E todos os campos estão habilitados e as ações de edição visíveis
+```
+
+---
+
+*Documento gerado em 28/05/2026 · Atualizado em 23/06/2026 — Referência: CCM-2743*

@@ -189,9 +189,9 @@
     Entrada: DELETE /flows/1  (flow 1 é "publicado")
     Esperado: HTTP 409 · { error: "Flows publicados não podem ser excluídos" }
 
-[ ] Tentar excluir flow "depreciado"
+[ ] Excluir flow com status "depreciado"
     Entrada: DELETE /flows/4  (flow 4 é "depreciado")
-    Esperado: HTTP 409 · { error: "Flows depreciados não podem ser excluídos" }
+    Esperado: HTTP 200 ou 204 · flow removido do banco · GET /flows/4 retorna 404
 
 [ ] Excluir flow inexistente
     Entrada: DELETE /flows/999
@@ -277,9 +277,13 @@
     Entrada: POST /flows/999/deprecate
     Esperado: HTTP 404 · { error: "Flow não encontrado" }
 
-[ ] Após depreciar — nenhuma ação adicional é disponibilizada no flow
+[ ] Após depreciar — não pode ser republicado nem editado
     Entrada: POST /flows/1/deprecate (sucesso) → POST /flows/1/publish
     Esperado: Primeira chamada retorna 200 · Segunda retorna 409
+
+[ ] Flow "depreciado" disponibiliza as ações: visualizar, duplicar e excluir
+    Entrada: GET /flows/4  (status "depreciado")
+    Esperado: HTTP 200 · ações disponíveis = [visualizar, duplicar, excluir]
 
 [ ] Após depreciar — flow permanece consultável (GET)
     Entrada: POST /flows/1/deprecate (sucesso) → GET /flows/1
@@ -303,9 +307,9 @@
     Entrada: POST /flows/5/duplicate
     Esperado: HTTP 201 · { name: "Validação de CPF (cópia)", status: "rascunho" }
 
-[ ] Tentar duplicar flow "depreciado"
+[ ] Duplicar flow "depreciado"
     Entrada: POST /flows/4/duplicate
-    Esperado: HTTP 409 · { error: "Flows depreciados não podem ser duplicados" }
+    Esperado: HTTP 201 · { name: "<nome original> (cópia)", status: "rascunho" }
 
 [ ] Duplicar flow — cópia contém todos os campos do original
     Entrada: POST /flows/1/duplicate  (flow 1 tem 3 campos)
@@ -701,11 +705,121 @@
     Entrada: PATCH /flows/2 (corrige dados) → POST /flows/2/publish (Meta aceita)
     Esperado: HTTP 200 · { status: "publicado" }
 
-[ ] Flow em "erro" mantém ações: editar, duplicar, excluir
+[ ] Flow em "erro" mantém ações: editar, excluir, duplicar
     Entrada: GET /flows/2  (status "erro")
-    Esperado: HTTP 200 · ações disponíveis = [editar, duplicar, excluir]
+    Esperado: HTTP 200 · ações disponíveis = [editar, excluir, duplicar]
 ```
 
 ---
 
-*Documento gerado em 28/05/2026 · Atualizado em 11/06/2026 — Referência: CCM-2743*
+## 14. Testes de Ações por Status (listagem)
+
+```
+# Matriz de ações por status:
+#   rascunho    → editar, excluir, duplicar
+#   erro        → editar, excluir, duplicar
+#   publicado   → visualizar, depreciar, duplicar
+#   depreciado  → visualizar, duplicar, excluir
+
+[ ] Ações de flow "rascunho"
+    Entrada: GET /flows/2  (status "rascunho")
+    Esperado: ações = [editar, excluir, duplicar]
+
+[ ] Ações de flow "erro"
+    Entrada: GET /flows/5  (status "erro")
+    Esperado: ações = [editar, excluir, duplicar]
+
+[ ] Ações de flow "publicado"
+    Entrada: GET /flows/1  (status "publicado")
+    Esperado: ações = [visualizar, depreciar, duplicar]
+
+[ ] Ações de flow "depreciado"
+    Entrada: GET /flows/4  (status "depreciado")
+    Esperado: ações = [visualizar, duplicar, excluir]
+
+[ ] Flow "publicado" não expõe ação de editar nem excluir
+    Entrada: GET /flows/1
+    Esperado: ações não contêm "editar" nem "excluir"
+
+[ ] Flow "rascunho"/"erro" não expõe ação de visualizar nem depreciar
+    Entrada: GET /flows/2
+    Esperado: ações não contêm "visualizar" (somente leitura) nem "depreciar"
+```
+
+---
+
+## 15. Testes do Seletor de Número WhatsApp (WABA)
+
+```
+[ ] Seletor lista números com dados completos
+    Entrada: abrir seletor "Número do WhatsApp" no construtor
+    Esperado: cada item exibe { nome, número, categoria (quando houver), quantidade de contatos }
+
+[ ] Item sem categoria não quebra o layout
+    Entrada: número WABA com category vazia
+    Esperado: item renderizado sem a linha de categoria
+
+[ ] Selecionar item vincula valor e aciona autosave
+    Entrada: clicar no item "Vonex · 11 97699-2942"
+    Esperado: campo number = "11 97699-2942" · gatilho de autosave acionado · seletor fechado
+
+[ ] Seletor fecha ao clicar fora
+    Entrada: abrir seletor → clicar em área externa
+    Esperado: lista é fechada sem alterar a seleção atual
+```
+
+---
+
+## 16. Testes do Modo Somente Leitura (Visualizar)
+
+```
+[ ] Visualizar flow "publicado" abre construtor somente leitura
+    Entrada: acionar "Visualizar" em flow publicado
+    Esperado: todos os inputs/selects desabilitados · botões "Salvar rascunho" e "Publicar flow" ocultos
+
+[ ] Visualizar flow "depreciado" abre construtor somente leitura
+    Entrada: acionar "Visualizar" em flow depreciado
+    Esperado: conteúdo consultável · nenhuma edição permitida
+
+[ ] Modo somente leitura oculta ações de campo
+    Entrada: construtor em modo visualização
+    Esperado: ocultos adicionar campo, excluir campo, alça de reordenar, adicionar/excluir opção · toggle e seletor de número não interativos
+
+[ ] Editar (não visualizar) mantém construtor editável
+    Entrada: acionar "Editar" em flow "rascunho" ou "erro"
+    Esperado: inputs habilitados · ações de edição visíveis · sem classe de somente leitura
+```
+
+---
+
+## 17. Testes do Checklist de Publicação ("Etapas para publicar")
+
+```
+[ ] Botão "Publicar flow" desabilitado com pendências
+    Entrada: flow com ao menos 1 item obrigatório vazio
+    Esperado: botão "Publicar flow" disabled
+
+[ ] Botão "Publicar flow" habilitado sem pendências
+    Entrada: flow com todos os obrigatórios preenchidos e campos válidos
+    Esperado: botão "Publicar flow" habilitado
+
+[ ] Checklist agrupa pendências em "Configurações gerais" e "Campos da tela"
+    Entrada: hover no botão "Publicar flow" com pendências
+    Esperado: popover exibe as duas categorias com indicador concluída/pendente e subcategorias
+
+[ ] Subcategorias de "Campos da tela" são dinâmicas por tipo de campo
+    Entrada: campo "short" sem título + campo "radio" com <2 opções
+    Esperado: lista "Preencha ou exclua o campo de resposta curta" e "Adicione ao menos 2 opções no campo de seleção única"
+
+[ ] Mensagens pluralizam quando há múltiplos campos do mesmo tipo
+    Entrada: 2 campos "short" sem título
+    Esperado: "Preencha ou exclua os campos de resposta curta" (plural)
+
+[ ] Contagem de pendências reflete o total das categorias
+    Entrada: flow em branco
+    Esperado: contagem = soma dos itens de "Configurações gerais" + "Campos da tela"
+```
+
+---
+
+*Documento gerado em 28/05/2026 · Atualizado em 23/06/2026 — Referência: CCM-2743*

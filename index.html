@@ -149,6 +149,80 @@
 .wa-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:32px 16px;text-align:center;}
 .wa-placeholder i{font-size:40px;color:#d6e1e9;}
 .wa-placeholder p{font-size:12px;color:#aaa;line-height:1.4;}
+/* ── WABA custom select ── */
+.waba-select{
+  position:relative;border:1px solid var(--neutral-color-high-medium);border-radius:var(--r-sm);
+  background:var(--background-color-lightest);cursor:pointer;user-select:none;
+}
+.waba-select.open{border-color:var(--brand-color-secundary-pure);border-bottom-left-radius:0;border-bottom-right-radius:0;}
+.waba-trigger{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;min-height:40px;
+}
+.waba-trigger-label{font-size:13px;color:var(--neutral-color-low-medium);}
+.waba-trigger-label.selected{color:var(--neutral-color-low-pure);font-weight:500;}
+.waba-caret{font-size:14px;color:var(--neutral-color-low-light);flex-shrink:0;}
+.waba-dropdown{
+  position:absolute;left:-1px;right:-1px;top:100%;
+  border:1px solid var(--brand-color-secundary-pure);border-top:none;
+  border-bottom-left-radius:var(--r-sm);border-bottom-right-radius:var(--r-sm);
+  background:var(--background-color-lightest);z-index:200;max-height:260px;overflow-y:auto;
+  box-shadow:0 4px 16px rgba(0,0,0,.10);
+}
+.waba-opt{
+  display:flex;align-items:center;gap:0;padding:10px 14px;cursor:pointer;
+  border-bottom:1px solid var(--neutral-color-high-light);transition:background .1s;
+}
+.waba-opt:last-child{border-bottom:none;}
+.waba-opt:hover{background:var(--brand-color-secundary-lightest);}
+.waba-opt.active{background:var(--brand-color-secundary-lightest);}
+.waba-opt-info{flex:1;min-width:0;}
+.waba-opt-name{font-size:13px;font-weight:600;color:var(--neutral-color-low-pure);line-height:1.3;}
+.waba-opt-phone{font-size:12px;color:var(--neutral-color-low-medium);margin-top:1px;}
+.waba-opt-cat{font-size:11px;color:var(--neutral-color-low-light);margin-top:1px;}
+.waba-opt-meta{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:12px;}
+.waba-opt-count{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:500;color:var(--feedback-color-warning-pure,#d97706);}
+.waba-opt-count i{font-size:13px;}
+.waba-opt-info-icon{font-size:14px;color:var(--feedback-color-warning-pure,#d97706);}
+.waba-divider{height:1px;background:var(--neutral-color-high-medium);}
+/* ── Validador de itens obrigatórios ── */
+.validation-wrap{position:relative;outline:none;}
+.validation-popover{
+  display:none;position:absolute;top:calc(100% + 8px);right:0;width:300px;z-index:300;
+  background:var(--background-color-lightest);border:1px solid var(--neutral-color-high-light);
+  border-radius:var(--r-md);box-shadow:var(--shadow-lg);padding:16px;
+}
+.validation-wrap:hover .validation-popover,
+.validation-wrap:focus-within .validation-popover{display:block;}
+.validation-popover::before{
+  content:'';position:absolute;top:-6px;right:18px;width:12px;height:12px;
+  background:var(--background-color-lightest);border-left:1px solid var(--neutral-color-high-light);
+  border-top:1px solid var(--neutral-color-high-light);transform:rotate(45deg);
+}
+.vp-title{font-size:15px;font-weight:600;color:var(--neutral-color-low-pure);margin-bottom:12px;}
+.vp-groups{display:flex;flex-direction:column;gap:10px;}
+.vp-group-hdr{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--neutral-color-low-pure);}
+.vp-group-hdr i{font-size:19px;flex-shrink:0;}
+.vp-ico-ok{color:var(--feedback-color-success-pure);}
+.vp-ico-pend{color:var(--neutral-color-high-dark);}
+.vp-group.ok .vp-group-hdr{color:var(--neutral-color-low-medium);}
+.vp-items{list-style:none;margin:6px 0 0 27px;display:flex;flex-direction:column;gap:5px;}
+.vp-items li{position:relative;padding-left:14px;font-size:12.5px;color:var(--neutral-color-low-medium);line-height:1.4;}
+.vp-items li::before{content:'';position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:var(--feedback-color-helper-pure);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.btn-prim:disabled:hover{background:var(--brand-color-primary-pure);}
+/* ── Modo somente leitura (Visualizar) ── */
+.view-mode .builder-actions{display:none;}
+.view-mode .add-field-btn,
+.view-mode .field-picker-inline,
+.view-mode .field-card-hdr .ico-btn,
+.view-mode .field-card-hdr .drag-handle,
+.view-mode .opt-del,
+.view-mode .btn-ghost{display:none;}
+.view-mode .toggle{pointer-events:none;opacity:.55;}
+.view-mode .waba-select{pointer-events:none;background:var(--neutral-color-high-light);opacity:.7;}
+.view-mode .ipt:disabled,
+.view-mode .sel-wrap select:disabled{background:var(--neutral-color-high-light);color:var(--neutral-color-low-medium);cursor:not-allowed;opacity:1;}
 </style>
 </head>
 <body>
@@ -327,10 +401,17 @@
             <button class="btn btn-sec" onclick="saveDraft()">
               <i class="ph ph-floppy-disk"></i> Salvar rascunho
             </button>
-            <!-- ANGULAR: <ccm-button type="primary"> -->
-            <button class="btn btn-prim" id="publishBtn" onclick="openPublish()">
-              <i class="ph ph-rocket-launch"></i> Publicar flow
-            </button>
+            <!-- Botão de publicar + checklist de etapas no hover — ANGULAR: <ccm-button [matMenuTriggerFor]> + <ccm-popover> -->
+            <div class="validation-wrap" id="validationWrap" tabindex="0">
+              <!-- ANGULAR: <ccm-button type="primary" [disabled]="form.invalid"> -->
+              <button class="btn btn-prim" id="publishBtn" onclick="openPublish()">
+                <i class="ph ph-rocket-launch"></i> Publicar flow
+              </button>
+              <div class="validation-popover" id="validationPopover">
+                <div class="vp-title">Etapas para publicar</div>
+                <div class="vp-groups" id="vpGroups"></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -374,16 +455,18 @@
                   <div class="field-row">
                     <label class="field-label">Número do WhatsApp <span class="req"></span></label>
                     <!-- ANGULAR: <mat-form-field><mat-select [formControlName]="'number'"> -->
-                    <div class="sel-wrap">
-                      <select id="bNumber" onchange="autosaveNow();updatePreview()">
-                        <option value="">Selecione</option>
-                        <option>11 3777-1887</option>
-                        <option>11 3777-9335</option>
-                        <option>11 3777-7627</option>
-                        <option>11 3777-1898</option>
-                      </select>
-                      <i class="ph ph-caret-down"></i>
+                    <!-- ANGULAR: component: WabaSelectComponent; uses MatSelect with custom option template -->
+                    <div class="waba-select" id="wabaSelect" onclick="toggleWabaDropdown(event)">
+                      <div class="waba-trigger">
+                        <span class="waba-trigger-label" id="wabaTriggerLabel">Selecione</span>
+                        <i class="ph ph-caret-up waba-caret" id="wabaCaret" style="display:none"></i>
+                        <i class="ph ph-caret-down waba-caret" id="wabaCaretDown"></i>
+                      </div>
+                      <div class="waba-dropdown" id="wabaDropdown" style="display:none">
+                        <!-- ANGULAR: *ngFor="let n of wabaNumbers" -->
+                      </div>
                     </div>
+                    <input type="hidden" id="bNumber">
                   </div>
                   <div class="field-row">
                     <label class="field-label">Título da tela <span class="req"></span></label>
@@ -642,6 +725,81 @@ const TYPE_META = {
   consent:  {label:'Campo de consentimento', icon:'ph-seal-check'},
 };
 
+/* Dados de exemplo: números WABA disponíveis */
+const WABA_NUMBERS = [
+  {id:'1', name:'Vonex',            phone:'11 97699-2942', category:'Cobrança',  contacts:999},
+  {id:'2', name:'Fake Product 2',   phone:'79 99150-7382', category:'Outros',    contacts:999},
+  {id:'3', name:'Produto não nomeado', phone:'08 00022-5811', category:'',       contacts:999},
+  {id:'4', name:'Vonex',            phone:'11 3777-1918',  category:'Suporte',   contacts:999},
+  {id:'5', name:'Fake Product',     phone:'79 99150-7723', category:'Vendas',    contacts:999},
+];
+let wabaSelected = null;
+
+function initWabaSelect(){
+  const dd = document.getElementById('wabaDropdown');
+  if(!dd) return;
+  dd.innerHTML = WABA_NUMBERS.map(n=>`
+    <div class="waba-opt${wabaSelected===n.id?' active':''}" onclick="selectWaba(event,'${n.id}')">
+      <div class="waba-opt-info">
+        <div class="waba-opt-name">${n.name}</div>
+        <div class="waba-opt-phone">${n.phone}</div>
+        ${n.category?`<div class="waba-opt-cat">${n.category}</div>`:''}
+      </div>
+      <div class="waba-opt-meta">
+        <span class="waba-opt-count"><i class="ph ph-users-three"></i> ${n.contacts}</span>
+        <i class="ph ph-info waba-opt-info-icon"></i>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleWabaDropdown(e){
+  const wrap = document.getElementById('wabaSelect');
+  const dd   = document.getElementById('wabaDropdown');
+  const caretUp   = document.getElementById('wabaCaret');
+  const caretDown = document.getElementById('wabaCaretDown');
+  if(!wrap||!dd) return;
+  const isOpen = dd.style.display!=='none';
+  if(isOpen){ closeWabaDropdown(); return; }
+  initWabaSelect();
+  dd.style.display='block';
+  wrap.classList.add('open');
+  caretUp.style.display='';
+  caretDown.style.display='none';
+  setTimeout(()=>document.addEventListener('click', onWabaOutside, {once:true}),0);
+}
+
+function closeWabaDropdown(){
+  const wrap = document.getElementById('wabaSelect');
+  const dd   = document.getElementById('wabaDropdown');
+  const caretUp   = document.getElementById('wabaCaret');
+  const caretDown = document.getElementById('wabaCaretDown');
+  if(dd) dd.style.display='none';
+  if(wrap) wrap.classList.remove('open');
+  if(caretUp) caretUp.style.display='none';
+  if(caretDown) caretDown.style.display='';
+}
+
+function onWabaOutside(e){
+  const wrap = document.getElementById('wabaSelect');
+  if(wrap && !wrap.contains(e.target)) closeWabaDropdown();
+}
+
+function selectWaba(e, id){
+  e.stopPropagation();
+  wabaSelected = id;
+  const n = WABA_NUMBERS.find(x=>x.id===id);
+  const lbl = document.getElementById('wabaTriggerLabel');
+  const inp = document.getElementById('bNumber');
+  if(n && lbl){
+    lbl.textContent = `${n.name} · ${n.phone}`;
+    lbl.classList.add('selected');
+  }
+  if(inp) inp.value = n ? n.phone : '';
+  closeWabaDropdown();
+  autosaveNow(); updatePreview();
+}
+
 /* Subtipos de Resposta curta (TextInput) — input-type fixo Meta */
 const SHORT_SUBTYPES = [
   {value:'text',     label:'Texto'},
@@ -667,12 +825,24 @@ function showListing() {
 }
 
 let currentFlowId = null;
-function showBuilder(flowId) {
+let isViewMode = false;
+function showBuilder(flowId, viewOnly=false) {
   currentFlowId = flowId;
+  isViewMode = !!viewOnly;
   document.getElementById('v-listing').style.display = 'none';
   document.getElementById('v-builder').style.display = 'flex';
   document.querySelector('.sidebar').style.display = 'none';
   initBuilder(flowId);
+  applyViewMode();
+}
+
+/* Modo somente leitura: desabilita inputs/selects e oculta ações de edição */
+function applyViewMode(){
+  const b=document.getElementById('v-builder');
+  if(!b)return;
+  b.classList.toggle('view-mode', isViewMode);
+  b.querySelectorAll('.editor-panel input, .editor-panel select, .editor-panel textarea')
+    .forEach(el=>{ el.disabled = isViewMode; });
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -735,11 +905,24 @@ function buildActions(f) {
     `<button class="ico-btn ${cls}" title="${tip}" onclick="${fn}(${f.id})"><i class="ph ${icon}"></i></button>`;
   /* ANGULAR: ico-btn → <ccm-button mini type="quinary"> */
   const a = [];
-  if (f.status==='rascunho'||f.status==='erro') a.push(B('ph-pencil-simple','Editar','editFlow'));
-  if (f.status==='publicado')                   a.push(B('ph-eye','Visualizar','viewFlow'));
-  if (f.status==='publicado')                   a.push(B('ph-prohibit','Depreciar','openDeprecate'));
-  if (f.status!=='depreciado')                  a.push(B('ph-copy','Duplicar','dupFlow'));
-  if (f.status==='rascunho'||f.status==='erro') a.push(B('ph-trash','Excluir','openDelete'));
+  switch(f.status){
+    case 'rascunho':
+    case 'erro':       // rascunho/erro: editar, excluir, duplicar
+      a.push(B('ph-pencil-simple','Editar','editFlow'));
+      a.push(B('ph-trash','Excluir','openDelete'));
+      a.push(B('ph-copy','Duplicar','dupFlow'));
+      break;
+    case 'publicado':  // publicado: visualizar, depreciar, duplicar
+      a.push(B('ph-eye','Visualizar','viewFlow'));
+      a.push(B('ph-prohibit','Depreciar','openDeprecate'));
+      a.push(B('ph-copy','Duplicar','dupFlow'));
+      break;
+    case 'depreciado': // depreciado: visualizar, duplicar, excluir
+      a.push(B('ph-eye','Visualizar','viewFlow'));
+      a.push(B('ph-copy','Duplicar','dupFlow'));
+      a.push(B('ph-trash','Excluir','openDelete'));
+      break;
+  }
   return a.join('');
 }
 
@@ -756,8 +939,8 @@ function renderPg(total) {
 }
 function goPage(n){listPage=n;renderListing();}
 
-function editFlow(id){ showBuilder(id); }
-function viewFlow(id){ showBuilder(id); }
+function editFlow(id){ showBuilder(id, false); }
+function viewFlow(id){ showBuilder(id, true); }
 
 function dupFlow(id) {
   const f = FLOWS.find(x=>x.id===id);
@@ -812,7 +995,7 @@ function initBuilder(flowId) {
   document.getElementById('bConfirm').value = data.confirm || '';
   bFields    = data.fields.map(f=>({...f, options:[...(f.options||[])]}));
   bFieldSeq  = bFields.length ? Math.max(...bFields.map(f=>f.id)) : 0;
-  updateCrumb(); renderFields(); updatePreview();
+  updateCrumb(); renderFields(); updatePreview(); refreshValidation();
 }
 
 function updateCrumb() {
@@ -827,6 +1010,7 @@ function autosaveNow() {
   saveTimer=setTimeout(()=>{},900);
   const s=document.getElementById('draftStatus');
   if(s)s.style.display='none';
+  refreshValidation();
 }
 
 /* ── FIELDS ── */
@@ -897,6 +1081,7 @@ function renderFields() {
           updateCharCount(`occ_${f.id}_${oi}`, e.target.value, OPTION_MAX);};}
     });
   });
+  applyViewMode();
 }
 
 function buildFieldCard(f) {
@@ -1110,6 +1295,69 @@ function validate() {
       errs.push(`Campo ${i+1}: exige ao menos 2 opções.`);
   });
   return errs;
+}
+
+/* Validação estruturada por categoria/subcategoria — alimenta o checklist e o estado do botão */
+function getValidationGroups() {
+  const v = id => (document.getElementById(id)?.value || '').trim();
+
+  // Categoria: Configurações gerais
+  const geral = [];
+  if(!v('bName'))     geral.push('Preencha o nome do flow');
+  if(!v('bCategory')) geral.push('Selecione a categoria');
+  if(!v('bNumber'))   geral.push('Selecione um número de WhatsApp');
+  if(!v('bTitle'))    geral.push('Preencha o título da tela');
+  if(!v('bSubmit'))   geral.push('Preencha o texto do botão de envio');
+
+  // Categoria: Campos da tela (dinâmico conforme campos adicionados)
+  const campos = [];
+  if(!bFields.length){
+    campos.push('Adicione ao menos um campo à tela');
+  } else {
+    const semLabel = {}, semOpcao = {};
+    bFields.forEach(f=>{
+      if(!f.label.trim()){
+        semLabel[f.type] = (semLabel[f.type]||0)+1;
+      } else if(['radio','checkbox','dropdown'].includes(f.type) && f.options.filter(o=>o.trim()).length<2){
+        semOpcao[f.type] = (semOpcao[f.type]||0)+1;
+      }
+    });
+    Object.entries(semLabel).forEach(([t,n])=>{
+      const nome=TYPE_META[t].label.toLowerCase();
+      campos.push(n>1?`Preencha ou exclua os campos de ${nome}`:`Preencha ou exclua o campo de ${nome}`);
+    });
+    Object.entries(semOpcao).forEach(([t,n])=>{
+      const nome=TYPE_META[t].label.toLowerCase();
+      campos.push(n>1?`Adicione ao menos 2 opções nos campos de ${nome}`:`Adicione ao menos 2 opções no campo de ${nome}`);
+    });
+  }
+
+  return [
+    {category:'Configurações gerais', items:geral},
+    {category:'Campos da tela',       items:campos},
+  ];
+}
+
+function refreshValidation() {
+  const groups  = getValidationGroups();
+  const pending = groups.reduce((s,g)=>s+g.items.length,0);
+
+  const btn = document.getElementById('publishBtn');
+  if(btn) btn.disabled = pending>0;
+
+  const box = document.getElementById('vpGroups');
+  if(box){
+    box.innerHTML = groups.map(g=>{
+      const ok = g.items.length===0;
+      return `<div class="vp-group ${ok?'ok':''}">
+        <div class="vp-group-hdr">
+          <i class="ph ph-check-circle ${ok?'vp-ico-ok':'vp-ico-pend'}"></i>
+          <span>${esc(g.category)}</span>
+        </div>
+        ${ok?'':`<ul class="vp-items">${g.items.map(it=>`<li>${esc(it)}</li>`).join('')}</ul>`}
+      </div>`;
+    }).join('');
+  }
 }
 
 function openPublish() {
