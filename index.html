@@ -107,6 +107,19 @@
   border-radius:var(--r-md);padding:10px;margin-top:8px;
 }
 .field-picker-inline.hidden{display:none;}
+.picker-group-hdr{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--neutral-color-low-light);margin:2px 0 6px;}
+/* Editores dos componentes de exibição — CCM-3070 */
+.radio-inline{display:flex;gap:18px;align-items:center;}
+.radio-inline label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--neutral-color-low-pure);cursor:pointer;}
+.radio-inline input[type=radio]{accent-color:var(--brand-color-primary-pure);}
+.img-thumb{max-width:180px;border-radius:8px;border:1px solid var(--neutral-color-high-medium);}
+.img-thumb.sm{max-width:120px;}
+.carousel-item{border:1px solid var(--neutral-color-high-light);border-radius:8px;padding:12px;background:var(--background-color-light);}
+.ci-hdr{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;color:var(--neutral-color-low-medium);margin-bottom:8px;}
+.rt-toolbar{display:flex;gap:6px;margin-bottom:6px;}
+.rt-toolbar span{width:28px;height:26px;border:1px solid var(--neutral-color-high-medium);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--neutral-color-low-medium);background:#fff;cursor:pointer;user-select:none;transition:.1s;}
+.rt-toolbar span:hover{border-color:var(--brand-color-primary-pure);color:var(--brand-color-primary-pure);background:var(--brand-color-primary-lightest);}
+.rt-toolbar .rt-b{font-weight:700;} .rt-toolbar .rt-i{font-style:italic;}
 /* toggle */
 .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .toggle{
@@ -146,6 +159,25 @@
 .wa-radio-dot{width:16px;height:16px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;}
 .wa-check-box{width:16px;height:16px;border-radius:4px;border:2px solid #ccc;flex-shrink:0;}
 .wa-footer{margin-top:6px;background:#25D366;color:#fff;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;}
+/* Componentes de exibição na prévia — CCM-3070 */
+.wa-heading{font-size:16px;font-weight:700;color:#111;margin:2px 0;}
+.wa-subheading{font-size:13px;font-weight:600;color:#333;margin:1px 0;}
+.wa-caption{font-size:11px;color:#888;margin:1px 0;}
+.wa-richtext{font-size:12px;color:#222;line-height:1.5;}
+.wa-richtext ul{margin:2px 0;padding-left:16px;}
+.wa-richtext li{margin:1px 0;}
+.wa-richtext .rt-link{color:#0a7cff;text-decoration:underline;}
+.wa-image{border-radius:10px;overflow:hidden;background:#eef2f4;}
+.wa-image img{width:100%;display:block;max-height:180px;}
+.wa-image.empty{height:120px;display:flex;align-items:center;justify-content:center;}
+.wa-image.empty i{font-size:34px;color:#c2d0d8;}
+.wa-carousel{position:relative;border-radius:10px;overflow:hidden;background:#eef2f4;}
+.wa-carousel.ar-4x3 .wa-car-track img,.wa-carousel.ar-4x3 .wa-image.empty{aspect-ratio:4/3;}
+.wa-carousel.ar-16x9 .wa-car-track img,.wa-carousel.ar-16x9 .wa-image.empty{aspect-ratio:16/9;}
+.wa-car-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:0;}
+.wa-car-track img{width:100%;flex:0 0 100%;scroll-snap-align:start;display:block;}
+.wa-car-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.4);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;}
+.wa-car-nav.left{left:6px;} .wa-car-nav.right{right:6px;}
 .wa-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:32px 16px;text-align:center;}
 .wa-placeholder i{font-size:40px;color:#d6e1e9;}
 .wa-placeholder p{font-size:12px;color:#aaa;line-height:1.4;}
@@ -507,10 +539,20 @@
               <div style="padding:0 20px 20px">
                 <!-- ANGULAR: <button class="add-field-btn" [matMenuTriggerFor]="fieldTypePicker"> -->
                 <button class="add-field-btn" onclick="togglePicker()">
-                  <i class="ph ph-plus-circle"></i> Adicionar campo
+                  <i class="ph ph-plus-circle"></i> Adicionar componente
                 </button>
                 <!-- ANGULAR: <mat-menu #fieldTypePicker="matMenu"> com <button mat-menu-item> -->
                 <div class="field-picker-inline hidden" id="fieldPicker">
+                  <div class="picker-group-hdr">Exibição</div>
+                  <div class="type-picker">
+                    <div class="type-opt" onclick="addField('image')"><i class="ph ph-image"></i><span>Imagem</span></div>
+                    <div class="type-opt" onclick="addField('carousel')"><i class="ph ph-images"></i><span>Carrossel</span></div>
+                    <div class="type-opt" onclick="addField('heading')"><i class="ph ph-text-h-one"></i><span>Título</span></div>
+                    <div class="type-opt" onclick="addField('subheading')"><i class="ph ph-text-h-two"></i><span>Subtítulo</span></div>
+                    <div class="type-opt" onclick="addField('caption')"><i class="ph ph-text-h-three"></i><span>Legenda</span></div>
+                    <div class="type-opt" onclick="addField('richtext')"><i class="ph ph-text-aa"></i><span>Texto formatado</span></div>
+                  </div>
+                  <div class="picker-group-hdr" style="margin-top:10px">Entradas</div>
                   <div class="type-picker">
                     <div class="type-opt" onclick="addField('short')"><i class="ph ph-text-aa"></i><span>Resposta curta</span></div>
                     <div class="type-opt" onclick="addField('text')"><i class="ph ph-text-align-left"></i><span>Resposta longa</span></div>
@@ -518,7 +560,7 @@
                     <div class="type-opt" onclick="addField('checkbox')"><i class="ph ph-check-square"></i><span>Múltipla escolha</span></div>
                     <div class="type-opt" onclick="addField('dropdown')"><i class="ph ph-caret-circle-down"></i><span>Dropdown</span></div>
                     <div class="type-opt" onclick="addField('date')"><i class="ph ph-calendar"></i><span>Data</span></div>
-                    <div class="type-opt" onclick="addField('consent')" style="grid-column:span 2"><i class="ph ph-seal-check"></i><span>Campo de consentimento</span></div>
+                    <div class="type-opt" onclick="addField('consent')" style="grid-column:span 2"><i class="ph ph-check-square"></i><span>Aceite</span></div>
                   </div>
                 </div>
               </div>
@@ -716,14 +758,33 @@ const SAMPLES = {
 };
 
 const TYPE_META = {
-  short:    {label:'Resposta curta',   icon:'ph-text-aa'},
-  text:     {label:'Resposta longa',   icon:'ph-text-align-left'},
-  radio:    {label:'Seleção única',    icon:'ph-radio-button'},
-  checkbox: {label:'Múltipla escolha', icon:'ph-check-square'},
-  dropdown: {label:'Dropdown',         icon:'ph-caret-circle-down'},
-  date:     {label:'Data',             icon:'ph-calendar'},
-  consent:  {label:'Campo de consentimento', icon:'ph-seal-check'},
+  // ── Exibição (não coletam dado — regra 8.1) ──
+  image:      {label:'Imagem',           icon:'ph-image',            group:'exibicao'},
+  carousel:   {label:'Carrossel',        icon:'ph-images',           group:'exibicao'},
+  heading:    {label:'Título',           icon:'ph-text-h-one',       group:'exibicao'},
+  subheading: {label:'Subtítulo',        icon:'ph-text-h-two',       group:'exibicao'},
+  caption:    {label:'Legenda',          icon:'ph-text-h-three',     group:'exibicao'},
+  richtext:   {label:'Texto formatado',  icon:'ph-text-aa',          group:'exibicao'},
+  // ── Entradas (coletam dado / contam para a regra 8.2) ──
+  short:      {label:'Resposta curta',   icon:'ph-text-aa',          group:'entrada'},
+  text:       {label:'Resposta longa',   icon:'ph-text-align-left',  group:'entrada'},
+  radio:      {label:'Seleção única',    icon:'ph-radio-button',     group:'entrada'},
+  checkbox:   {label:'Múltipla escolha', icon:'ph-check-square',     group:'entrada'},
+  dropdown:   {label:'Dropdown',         icon:'ph-caret-circle-down',group:'entrada'},
+  date:       {label:'Data',             icon:'ph-calendar',         group:'entrada'},
+  consent:    {label:'Aceite',           icon:'ph-check-square',     group:'entrada'},
 };
+/* Grupos e classificação (CCM-3070) */
+const DISPLAY_TYPES = ['image','carousel','heading','subheading','caption','richtext'];
+const TEXT_DISPLAY_TYPES = ['heading','subheading','caption','richtext'];
+const isDisplay = t => TYPE_META[t] && TYPE_META[t].group === 'exibicao';
+const isInput   = t => TYPE_META[t] && TYPE_META[t].group === 'entrada';
+/* Placeholder de imagem embutida (simula base64 do upload no protótipo estático) */
+const IMG_PLACEHOLDERS = [
+  'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#925aff"/><stop offset="1" stop-color="#5ac8ff"/></linearGradient></defs><rect width="320" height="200" fill="url(#g)"/><text x="160" y="108" font-family="Arial" font-size="16" fill="#fff" text-anchor="middle">Imagem 320×200</text></svg>'),
+  'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="320" height="200" fill="#1d9e75"/><text x="160" y="108" font-family="Arial" font-size="16" fill="#fff" text-anchor="middle">Foto do produto</text></svg>'),
+  'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="320" height="200" fill="#d85a30"/><text x="160" y="108" font-family="Arial" font-size="16" fill="#fff" text-anchor="middle">Banner</text></svg>'),
+];
 
 /* Dados de exemplo: números WABA disponíveis */
 const WABA_NUMBERS = [
@@ -1018,14 +1079,60 @@ function togglePicker(){document.getElementById('fieldPicker').classList.toggle(
 
 function addField(type) {
   document.getElementById('fieldPicker').classList.add('hidden');
+  if(type==='carousel' && bFields.filter(f=>f.type==='carousel').length>=3){ toast('err','Máximo de 3 carrosséis por Flow.'); return; }
   const id = ++bFieldSeq;
   const opts = ['radio','checkbox','dropdown'].includes(type) ? ['',''] : [];
-  const field = {id, type, label:'', required:true, options:opts};
+  const field = {id, type, label:'', required: isInput(type), options:opts};
   if(type==='short') field.subtype='text';
   if(HAS_INSTRUCTION.includes(type)) field.instruction='';
+  // Componentes de exibição (CCM-3070)
+  if(type==='image')       Object.assign(field,{source:'upload', url:'', img:'', alt:'', mode:'contain'});
+  if(type==='carousel')    Object.assign(field,{images:[{img:'',alt:''},{img:'',alt:''}], aspect:'4:3', mode:'contain'});
+  if(TEXT_DISPLAY_TYPES.includes(type)) field.content='';
   bFields.push(field);
   renderFields(); autosaveNow(); updatePreview();
 }
+
+/* ── Setters dos componentes de exibição / aceite (CCM-3070) ── */
+function fld(id){return bFields.find(x=>x.id===id);}
+function setContent(id,v){const f=fld(id);if(!f)return;const max=contentMax(f.type);if(v.length>max)v=v.slice(0,max);f.content=v;updateCharCount(`xc_${id}`, v, max);autosaveNow();updatePreview();}
+function rtFormat(id,kind){
+  const ta=document.getElementById('fx_'+id); if(!ta)return;
+  const s=ta.selectionStart, e=ta.selectionEnd, val=ta.value, sel=val.slice(s,e);
+  let ins, caret;
+  if(kind==='b'){ ins='**'+(sel||'texto em negrito')+'**'; }
+  else if(kind==='i'){ ins='*'+(sel||'texto em itálico')+'*'; }
+  else if(kind==='list'){ ins=(sel||'Item').split('\n').map(l=>'- '+l).join('\n'); }
+  else if(kind==='link'){ ins='['+(sel||'texto do link')+'](https://)'; }
+  ta.value = val.slice(0,s)+ins+val.slice(e);
+  caret = s+ins.length;
+  ta.focus(); ta.setSelectionRange(s, s+ins.length);
+  setContent(id, ta.value);
+}
+function setImgSource(id,v){const f=fld(id);if(!f)return;f.source=v;renderFields();autosaveNow();updatePreview();}
+function setImgAlt(id,v){const f=fld(id);if(!f)return;f.alt=v;autosaveNow();updatePreview();}
+function setImgMode(id,v){const f=fld(id);if(!f)return;f.mode=v;renderFields();autosaveNow();updatePreview();}
+function uploadImg(id){const f=fld(id);if(!f)return;f.img=IMG_PLACEHOLDERS[0];f.url='';autosaveNow();renderFields();updatePreview();toast('ok','Imagem convertida para base64 e adicionada');}
+function setImgUrl(id,v){
+  const f=fld(id);if(!f)return;f.url=v;
+  // simula carregamento por URL (regra 8.6): URL vazia limpa; URL válida http converte; inválida avisa
+  if(!v.trim()){f.img='';autosaveNow();updatePreview();return;}
+  if(/^https?:\/\/.+\.(jpg|jpeg|png)(\?.*)?$/i.test(v.trim())){f.img=IMG_PLACEHOLDERS[1];}
+  else {f.img='';}
+  autosaveNow();updatePreview();
+}
+function validateImgUrl(id){
+  const f=fld(id);if(!f||!f.url.trim())return;
+  if(/^https?:\/\/.+\.(jpg|jpeg|png)(\?.*)?$/i.test(f.url.trim())){f.img=IMG_PLACEHOLDERS[1];toast('ok','Imagem carregada e convertida para base64');}
+  else {f.img='';toast('err','Não foi possível carregar esta imagem.');}
+  renderFields();updatePreview();
+}
+function uploadCarouselImg(id,idx){const f=fld(id);if(!f)return;f.images[idx].img=IMG_PLACEHOLDERS[idx%3];autosaveNow();renderFields();updatePreview();}
+function setCarouselAlt(id,idx,v){const f=fld(id);if(!f)return;f.images[idx].alt=v;autosaveNow();updatePreview();}
+function setCarouselAspect(id,v){const f=fld(id);if(!f)return;f.aspect=v;renderFields();autosaveNow();updatePreview();}
+function setCarouselMode(id,v){const f=fld(id);if(!f)return;f.mode=v;renderFields();autosaveNow();updatePreview();}
+function addCarouselImg(id){const f=fld(id);if(!f)return;if(f.images.length>=3){toast('err','Máximo de 3 imagens no carrossel.');return;}f.images.push({img:'',alt:''});renderFields();autosaveNow();updatePreview();}
+function removeCarouselImg(id,idx){const f=fld(id);if(!f)return;if(f.images.length<=2){toast('err','Adicione ao menos duas imagens ao carrossel.');return;}f.images.splice(idx,1);renderFields();autosaveNow();updatePreview();}
 
 function removeField(id) {
   bFields=bFields.filter(f=>f.id!==id); renderFields(); autosaveNow(); updatePreview();
@@ -1044,7 +1151,7 @@ function renderFields() {
   if(!bFields.length){
     cnt.innerHTML=`<div class="info-banner" id="noFieldsBanner">
       <i class="ph ph-info"></i>
-      Adicione ao menos um campo à tela antes de publicar o flow.
+      Adicione ao menos um campo de entrada à tela antes de publicar o Flow.
     </div>`;
     return;
   }
@@ -1084,8 +1191,127 @@ function renderFields() {
   applyViewMode();
 }
 
-function buildFieldCard(f) {
-  const tm=TYPE_META[f.type];
+function cardHeaderLabel(f){
+  if(f.type==='image')    return f.alt || (f.img?'Imagem':'(sem imagem)');
+  if(f.type==='carousel') return `${(f.images||[]).length} imagens`;
+  if(TEXT_DISPLAY_TYPES.includes(f.type)) return f.content ? f.content.slice(0,40) : '(sem texto)';
+  return f.label || '(sem label)';
+}
+
+/* Corpo do card conforme o tipo de componente (CCM-3070) */
+function buildCardBody(f){
+  if(f.type==='image')    return imageBody(f);
+  if(f.type==='carousel') return carouselBody(f);
+  if(TEXT_DISPLAY_TYPES.includes(f.type)) return textDisplayBody(f);
+  if(f.type==='consent')  return aceiteBody(f);
+  return inputBody(f);
+}
+
+function textDisplayBody(f){
+  if(f.type==='richtext'){
+    return `<div class="fields-grid"><div class="field-row span2">
+      <label class="field-label">Texto formatado <span class="req"></span></label>
+      <div class="rt-toolbar">
+        <span class="rt-b" title="Negrito" onmousedown="event.preventDefault()" onclick="rtFormat(${f.id},'b')">B</span>
+        <span class="rt-i" title="Itálico" onmousedown="event.preventDefault()" onclick="rtFormat(${f.id},'i')">I</span>
+        <span title="Lista" onmousedown="event.preventDefault()" onclick="rtFormat(${f.id},'list')"><i class="ph ph-list-bullets"></i></span>
+        <span title="Link" onmousedown="event.preventDefault()" onclick="rtFormat(${f.id},'link')"><i class="ph ph-link"></i></span>
+      </div>
+      <textarea class="ipt" id="fx_${f.id}" rows="4" maxlength="${contentMax(f.type)}" style="min-height:96px;resize:vertical" oninput="setContent(${f.id},this.value)" placeholder="Use a barra acima para negrito, itálico, listas e links">${esc(f.content||'')}</textarea>
+      <span class="char-count" id="xc_${f.id}">${Math.max(0, contentMax(f.type)-(f.content||'').length)}</span>
+    </div></div>`;
+  }
+  if(f.type==='caption'){
+    return `<div class="fields-grid"><div class="field-row span2">
+      <label class="field-label">Texto <span class="req"></span></label>
+      <textarea class="ipt" id="fx_${f.id}" rows="4" maxlength="${contentMax(f.type)}" style="min-height:96px;resize:vertical" oninput="setContent(${f.id},this.value)" placeholder="Ex.: Observação ou nota">${esc(f.content||'')}</textarea>
+      <span class="char-count" id="xc_${f.id}">${Math.max(0, contentMax(f.type)-(f.content||'').length)}</span>
+    </div></div>`;
+  }
+  const ph = {heading:'Ex.: Conheça nosso plano', subheading:'Ex.: Benefícios exclusivos'}[f.type];
+  return `<div class="fields-grid"><div class="field-row span2">
+    <label class="field-label">Texto <span class="req"></span></label>
+    <input class="ipt" id="fx_${f.id}" type="text" maxlength="${contentMax(f.type)}" value="${esc(f.content||'')}" oninput="setContent(${f.id},this.value)" placeholder="${ph}">
+    <span class="char-count" id="xc_${f.id}">${Math.max(0, contentMax(f.type)-(f.content||'').length)}</span>
+  </div></div>`;
+}
+
+function aceiteBody(f){
+  return `<div class="fields-grid"><div class="field-row span2">
+      <label class="field-label">Texto do aceite <span class="req"></span></label>
+      <input class="ipt" id="fl_${f.id}" type="text" maxlength="${labelMax('consent')}" placeholder="Ex.: Concordo com os termos de uso">
+      <span class="char-count" id="cc_${f.id}">${labelMax('consent')}</span>
+    </div></div>
+    <div class="toggle-row">
+      <span style="font-size:13px;color:var(--neutral-color-low-medium)">Obrigatório para enviar</span>
+      <button class="toggle ${f.required?'on':''}" id="fr_${f.id}" onclick="toggleReq(${f.id})"></button>
+    </div>`;
+}
+
+function imageBody(f){
+  const upload = f.source==='upload';
+  return `<div class="fields-grid">
+    <div class="field-row span2">
+      <label class="field-label">Origem <span class="req"></span></label>
+      <div class="radio-inline">
+        <label><input type="radio" name="src_${f.id}" ${upload?'checked':''} onclick="setImgSource(${f.id},'upload')"> Upload</label>
+        <label><input type="radio" name="src_${f.id}" ${!upload?'checked':''} onclick="setImgSource(${f.id},'url')"> URL</label>
+      </div>
+    </div>
+    <div class="field-row span2">
+      ${upload
+        ? `<label class="field-label">Arquivo</label>
+           <button class="btn btn-ghost btn-sm" onclick="uploadImg(${f.id})" style="align-self:flex-start"><i class="ph ph-upload-simple"></i> Escolher arquivo</button>`
+        : `<label class="field-label">URL da imagem</label>
+           <div class="opt-row">
+             <input class="ipt" id="fu_${f.id}" type="text" value="${esc(f.url||'')}" oninput="setImgUrl(${f.id},this.value)" placeholder="https://...jpg">
+             <button class="btn btn-ghost btn-sm" onclick="validateImgUrl(${f.id})" style="white-space:nowrap">Carregar</button>
+           </div>`}
+    </div>
+    ${f.img?`<div class="field-row span2"><img class="img-thumb" src="${f.img}" alt=""></div>`:''}
+    <div class="field-row span2">
+      <label class="field-label">Texto alternativo <span class="opt-tag">· Recomendado</span></label>
+      <input class="ipt" type="text" value="${esc(f.alt||'')}" oninput="setImgAlt(${f.id},this.value)" placeholder="Descrição da imagem (acessibilidade)">
+    </div>
+    <div class="field-row span2">
+      <label class="field-label">Modo de exibição</label>
+      <div class="radio-inline">
+        <label><input type="radio" name="mode_${f.id}" ${f.mode==='contain'?'checked':''} onclick="setImgMode(${f.id},'contain')"> Conter</label>
+        <label><input type="radio" name="mode_${f.id}" ${f.mode==='cover'?'checked':''} onclick="setImgMode(${f.id},'cover')"> Preencher</label>
+      </div>
+    </div>
+  </div>`;
+}
+
+function carouselBody(f){
+  return `<div class="fields-grid">
+    ${(f.images||[]).map((im,idx)=>`
+      <div class="field-row span2 carousel-item">
+        <div class="ci-hdr">Imagem ${idx+1}${(f.images.length>2)?` <button class="opt-del" onclick="removeCarouselImg(${f.id},${idx})"><i class="ph ph-trash"></i></button>`:''}</div>
+        ${im.img?`<img class="img-thumb sm" src="${im.img}">`:`<button class="btn btn-ghost btn-sm" onclick="uploadCarouselImg(${f.id},${idx})" style="align-self:flex-start"><i class="ph ph-upload-simple"></i> Upload</button>`}
+        <input class="ipt" type="text" value="${esc(im.alt||'')}" oninput="setCarouselAlt(${f.id},${idx},this.value)" placeholder="Texto alternativo (obrigatório)" style="margin-top:8px">
+      </div>`).join('')}
+    <div class="field-row span2">
+      <button class="btn btn-ghost btn-sm" ${f.images.length>=3?'disabled':''} onclick="addCarouselImg(${f.id})" style="align-self:flex-start"><i class="ph ph-plus"></i> Adicionar imagem</button>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Aspecto</label>
+      <div class="radio-inline">
+        <label><input type="radio" name="asp_${f.id}" ${f.aspect==='4:3'?'checked':''} onclick="setCarouselAspect(${f.id},'4:3')"> 4:3</label>
+        <label><input type="radio" name="asp_${f.id}" ${f.aspect==='16:9'?'checked':''} onclick="setCarouselAspect(${f.id},'16:9')"> 16:9</label>
+      </div>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Modo</label>
+      <div class="radio-inline">
+        <label><input type="radio" name="cmode_${f.id}" ${f.mode==='contain'?'checked':''} onclick="setCarouselMode(${f.id},'contain')"> Conter</label>
+        <label><input type="radio" name="cmode_${f.id}" ${f.mode==='cover'?'checked':''} onclick="setCarouselMode(${f.id},'cover')"> Preencher</label>
+      </div>
+    </div>
+  </div>`;
+}
+
+function inputBody(f){
   const hasOpts=['radio','checkbox','dropdown'].includes(f.type);
   const optRows=!hasOpts?'':
     `<div class="field-row">
@@ -1106,31 +1332,10 @@ function buildFieldCard(f) {
         <i class="ph ph-plus"></i> Adicionar opção
       </button>`}
     </div>`;
-  /* ANGULAR: field-card → Pode usar <mat-expansion-panel> ou card customizado dentro de FormArray */
-  /* ANGULAR: toggle → <mat-slide-toggle [formControlName]="'required'" color="primary"> */
-  /* ANGULAR: btn-ghost → <ccm-button type="terciary"> */
-  /* ANGULAR: ico-btn (subir/descer/remover) → <ccm-button mini type="quinary"> */
-  return `
-  <div class="field-card" id="fc_${f.id}"
-    ondragstart="dragStart(event,${f.id})" ondragend="dragEnd(event)"
-    ondragover="dragOver(event,${f.id})" ondragleave="dragLeave(event,${f.id})" ondrop="dragDrop(event,${f.id})">
-    <div class="field-card-hdr" onclick="toggleCard(${f.id})">
-      <i class="ph ph-dots-six-vertical drag-handle" title="Arraste para reordenar"
-        onmousedown="grabHandle(${f.id})" onmouseup="releaseHandle(${f.id})"></i>
-      <span class="type-chip"><i class="ph ${tm.icon}"></i> ${tm.label}</span>
-      <span class="lbl" id="fh_${f.id}">${f.label||'(sem label)'}</span>
-      <span class="req-badge" id="rb_${f.id}" style="${f.required?'':'display:none'}">Obrigatório</span>
-      <button class="ico-btn" title="Subir" onclick="event.stopPropagation();moveField(${f.id},-1)"><i class="ph ph-arrow-up"></i></button>
-      <button class="ico-btn" title="Descer" onclick="event.stopPropagation();moveField(${f.id},1)"><i class="ph ph-arrow-down"></i></button>
-      <button class="ico-btn danger" title="Remover" onclick="event.stopPropagation();removeField(${f.id})"><i class="ph ph-trash"></i></button>
-    </div>
-    <div class="field-card-body" id="fb_${f.id}">
-      <div class="fields-grid">
+  return `<div class="fields-grid">
         <div class="field-row span2">
-          <label class="field-label">${f.type==='consent'?'Descrição':'Título'} <span class="req"></span></label>
-          ${f.type==='consent'
-            ? `<textarea class="ipt" id="fl_${f.id}" rows="3" maxlength="${labelMax(f.type)}" style="min-height:84px;resize:vertical" placeholder="Ex.: Aceito os termos de uso e a política de privacidade"></textarea>`
-            : `<input class="ipt" id="fl_${f.id}" type="text" maxlength="${labelMax(f.type)}" placeholder="Ex.: Nome completo">`}
+          <label class="field-label">Título <span class="req"></span></label>
+          <input class="ipt" id="fl_${f.id}" type="text" maxlength="${labelMax(f.type)}" placeholder="Ex.: Nome completo">
           <span class="char-count" id="cc_${f.id}">${labelMax(f.type)}</span>
         </div>
         ${f.type==='short'?`<div class="field-row">
@@ -1152,13 +1357,40 @@ function buildFieldCard(f) {
         <span style="font-size:13px;color:var(--neutral-color-low-medium)">Campo obrigatório</span>
         <button class="toggle ${f.required?'on':''}" id="fr_${f.id}" onclick="toggleReq(${f.id})"></button>
       </div>
-      ${optRows}
+      ${optRows}`;
+}
+
+function buildFieldCard(f) {
+  const tm=TYPE_META[f.type];
+  const reqBadge = (isInput(f.type)&&f.required)
+    ? `<span class="req-badge" id="rb_${f.id}">Obrigatório</span>` : '';
+  /* ANGULAR: field-card → <mat-expansion-panel> ou card dentro de FormArray */
+  /* ANGULAR: ico-btn (subir/descer/remover) → <ccm-button mini type="quinary"> */
+  return `
+  <div class="field-card" id="fc_${f.id}"
+    ondragstart="dragStart(event,${f.id})" ondragend="dragEnd(event)"
+    ondragover="dragOver(event,${f.id})" ondragleave="dragLeave(event,${f.id})" ondrop="dragDrop(event,${f.id})">
+    <div class="field-card-hdr" onclick="toggleCard(${f.id})">
+      <i class="ph ph-dots-six-vertical drag-handle" title="Arraste para reordenar"
+        onmousedown="grabHandle(${f.id})" onmouseup="releaseHandle(${f.id})"></i>
+      <span class="type-chip"><i class="ph ${tm.icon}"></i> ${tm.label}</span>
+      <span class="lbl" id="fh_${f.id}">${esc(cardHeaderLabel(f))}</span>
+      ${reqBadge}
+      <button class="ico-btn" title="Subir" onclick="event.stopPropagation();moveField(${f.id},-1)"><i class="ph ph-arrow-up"></i></button>
+      <button class="ico-btn" title="Descer" onclick="event.stopPropagation();moveField(${f.id},1)"><i class="ph ph-arrow-down"></i></button>
+      <button class="ico-btn danger" title="Remover" onclick="event.stopPropagation();removeField(${f.id})"><i class="ph ph-trash"></i></button>
+    </div>
+    <div class="field-card-body" id="fb_${f.id}">
+      ${buildCardBody(f)}
     </div>
   </div>`;
 }
 
 /* Limites de caracteres por tipo de campo (Meta) */
-const LABEL_MAX = {short:20, text:20, radio:30, checkbox:30, dropdown:30, date:20, consent:300};
+const LABEL_MAX = {short:20, text:20, radio:30, checkbox:30, dropdown:30, date:20, consent:120};
+/* Limite de caracteres dos textos de exibição (Meta) — CCM-3070 */
+const CONTENT_MAX = {heading:80, subheading:80, caption:4096, richtext:4096};
+function contentMax(type){return CONTENT_MAX[type]||80;}
 const OPTION_MAX = 30;
 const SUBMIT_MAX = 30;
 const INSTRUCTION_MAX = 80;
@@ -1237,6 +1469,21 @@ function removeOpt(fid, oi) {
 
 /* ── PREVIEW ── */
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+/* Renderização simplificada de Texto formatado (RichText) na prévia — CCM-3070 8.10 */
+function renderRich(src){
+  const lines=String(src).split('\n');
+  let out='', inList=false;
+  const inline = s => esc(s)
+    .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
+    .replace(/\*(.+?)\*/g,'<i>$1</i>')
+    .replace(/\[(.+?)\]\((.+?)\)/g,'<span class="rt-link">$1</span>');
+  for(const ln of lines){
+    if(/^\s*[-*•]\s+/.test(ln)){ if(!inList){out+='<ul>';inList=true;} out+=`<li>${inline(ln.replace(/^\s*[-*•]\s+/,''))}</li>`; }
+    else { if(inList){out+='</ul>';inList=false;} if(ln.trim()) out+=`<div>${inline(ln)}</div>`; }
+  }
+  if(inList)out+='</ul>';
+  return out||esc(src);
+}
 
 function updatePreview() {
   const title  = document.getElementById('bTitle').value.trim();
@@ -1252,6 +1499,29 @@ function updatePreview() {
   bFields.forEach(f=>{
     const lbl=f.label||'(campo sem label)';
     const req=f.required?'<span class="req"></span>':'';
+    // ── Componentes de exibição (CCM-3070) ──
+    if(f.type==='heading'){ html+=`<div class="wa-heading">${esc(f.content||'Título')}</div>`; return; }
+    if(f.type==='subheading'){ html+=`<div class="wa-subheading">${esc(f.content||'Subtítulo')}</div>`; return; }
+    if(f.type==='caption'){ html+=`<div class="wa-caption">${esc(f.content||'Legenda')}</div>`; return; }
+    if(f.type==='richtext'){ html+=`<div class="wa-richtext">${renderRich(f.content||'Texto formatado')}</div>`; return; }
+    if(f.type==='image'){
+      html+= f.img
+        ? `<div class="wa-image"><img src="${f.img}" style="object-fit:${f.mode==='cover'?'cover':'contain'}" alt="${esc(f.alt||'')}"></div>`
+        : `<div class="wa-image empty"><i class="ph ph-image"></i></div>`;
+      return;
+    }
+    if(f.type==='carousel'){
+      const imgs=(f.images||[]).filter(im=>im.img);
+      const cells=(imgs.length?imgs:[{},{}]).map(im=> im.img
+        ? `<img src="${im.img}" style="object-fit:${f.mode==='cover'?'cover':'contain'}">`
+        : `<div class="wa-image empty" style="min-width:100%"><i class="ph ph-images"></i></div>`).join('');
+      html+=`<div class="wa-carousel ${f.aspect==='16:9'?'ar-16x9':'ar-4x3'}">
+        <div class="wa-car-track">${cells}</div>
+        <i class="ph ph-caret-left wa-car-nav left"></i>
+        <i class="ph ph-caret-right wa-car-nav right"></i>
+      </div>`;
+      return;
+    }
     if(f.type==='consent'){
       const ctext=f.label||'Aceito os termos e condições';
       html+=`<div class="wa-field"><div class="wa-check-opt" style="align-items:flex-start">
@@ -1291,9 +1561,17 @@ function validate() {
   if(!document.getElementById('bNumber').value)      errs.push('Número do WhatsApp é obrigatório.');
   if(!document.getElementById('bTitle').value.trim()) errs.push('Título da tela é obrigatório.');
   if(!document.getElementById('bSubmit').value.trim()) errs.push('Texto do botão de envio é obrigatório.');
-  if(!bFields.length) errs.push('Adicione ao menos um campo à tela antes de publicar o flow.');
+  if(!bFields.length || !bFields.some(f=>isInput(f.type)))
+    errs.push('Adicione ao menos um campo de entrada à tela antes de publicar o Flow.');
+  if(bFields.filter(f=>f.type==='carousel').length>3) errs.push('Máximo de 3 carrosséis por Flow.');
   bFields.forEach((f,i)=>{
-    if(!f.label.trim()) errs.push(`Campo ${i+1}: label é obrigatório.`);
+    if(f.type==='carousel'){
+      if((f.images||[]).filter(im=>im.img).length<2) errs.push('Adicione ao menos duas imagens ao carrossel.');
+      return;
+    }
+    if(f.type==='image'){ if(!f.img) errs.push(`Componente ${i+1}: adicione a imagem.`); return; }
+    if(TEXT_DISPLAY_TYPES.includes(f.type)){ if(!(f.content||'').trim()) errs.push(`Componente ${i+1}: preencha o texto.`); return; }
+    if(!f.label.trim()) errs.push(`Campo ${i+1}: texto é obrigatório.`);
     if(['radio','checkbox','dropdown'].includes(f.type)&&f.options.filter(o=>o.trim()).length<2)
       errs.push(`Campo ${i+1}: exige ao menos 2 opções.`);
   });
@@ -1312,32 +1590,33 @@ function getValidationGroups() {
   if(!v('bTitle'))    geral.push('Preencha o título da tela');
   if(!v('bSubmit'))   geral.push('Preencha o texto do botão de envio');
 
-  // Categoria: Campos da tela (dinâmico conforme campos adicionados)
-  const campos = [];
-  if(!bFields.length){
-    campos.push('Adicione ao menos um campo à tela');
-  } else {
-    const semLabel = {}, semOpcao = {};
-    bFields.forEach(f=>{
-      if(!f.label.trim()){
-        semLabel[f.type] = (semLabel[f.type]||0)+1;
-      } else if(['radio','checkbox','dropdown'].includes(f.type) && f.options.filter(o=>o.trim()).length<2){
-        semOpcao[f.type] = (semOpcao[f.type]||0)+1;
-      }
-    });
-    Object.entries(semLabel).forEach(([t,n])=>{
-      const nome=TYPE_META[t].label.toLowerCase();
-      campos.push(n>1?`Preencha ou exclua os campos de ${nome}`:`Preencha ou exclua o campo de ${nome}`);
-    });
-    Object.entries(semOpcao).forEach(([t,n])=>{
-      const nome=TYPE_META[t].label.toLowerCase();
-      campos.push(n>1?`Adicione ao menos 2 opções nos campos de ${nome}`:`Adicione ao menos 2 opções no campo de ${nome}`);
-    });
+  // Categoria: Componentes da tela (dinâmico conforme componentes adicionados)
+  let campos = [];
+  if(!bFields.length || !bFields.some(f=>isInput(f.type))){
+    // Regra 8.2 — pelo menos um campo de entrada
+    campos.push('Adicione ao menos um campo de entrada à tela');
   }
+  bFields.forEach(f=>{
+    const nome=TYPE_META[f.type].label.toLowerCase();
+    if(TEXT_DISPLAY_TYPES.includes(f.type)){
+      if(!(f.content||'').trim()) campos.push(`Preencha o texto do ${nome}`);
+    } else if(f.type==='image'){
+      if(!f.img) campos.push(`Adicione a imagem do componente ${nome}`);
+    } else if(f.type==='carousel'){
+      if((f.images||[]).filter(im=>im.img).length<2) campos.push('Adicione ao menos duas imagens ao carrossel');
+      else if((f.images||[]).some(im=>im.img && !(im.alt||'').trim())) campos.push('Preencha o texto alternativo de cada imagem do carrossel');
+    } else {
+      // entradas (short/text/radio/checkbox/dropdown/date/consent)
+      if(!(f.label||'').trim()) campos.push(`Preencha ou exclua o campo de ${nome}`);
+      else if(['radio','checkbox','dropdown'].includes(f.type) && f.options.filter(o=>o.trim()).length<2) campos.push(`Adicione ao menos 2 opções no campo de ${nome}`);
+    }
+  });
+  if(bFields.filter(f=>f.type==='carousel').length>3) campos.push('Máximo de 3 carrosséis por Flow');
+  campos = [...new Set(campos)];
 
   return [
     {category:'Configurações gerais', items:geral},
-    {category:'Campos da tela',       items:campos},
+    {category:'Componentes da tela',  items:campos},
   ];
 }
 

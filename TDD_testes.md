@@ -820,6 +820,64 @@
     Esperado: contagem = soma dos itens de "Configurações gerais" + "Campos da tela"
 ```
 
+## 18. Componentes de Exibição e Aceite (CCM-3070)
+
+```
+[ ] Picker agrupa componentes em "Exibição" e "Entradas"
+    Entrada: abrir "Adicionar componente"
+    Esperado: grupo Exibição (Imagem, Carrossel, Título, Subtítulo, Legenda, Texto formatado) e Entradas (…, Aceite)
+
+[ ] Imagem por upload converte para base64 e mostra na prévia
+    Entrada: addField('image') + uploadImg
+    Esperado: f.img preenchido (data URI); <.wa-image img> presente na prévia
+
+[ ] Imagem por URL válida (.jpg/.png) carrega
+    Entrada: origem URL + validateImgUrl com https://x/y.jpg
+    Esperado: f.img preenchido; toast de sucesso
+
+[ ] Imagem por URL inválida bloqueia com mensagem
+    Entrada: validateImgUrl com "abc"
+    Esperado: f.img vazio; toast "Não foi possível carregar esta imagem."
+
+[ ] Carrossel: 2 a 3 imagens; addCarouselImg limita a 3, removeCarouselImg mantém min 2
+    Esperado: 4ª imagem bloqueada; botão "Adicionar imagem" desabilitado em 3 (sem texto "máx. 3"); remover abaixo de 2 bloqueado
+
+[ ] Máximo de 3 carrosséis por Flow
+    Entrada: addField('carousel') 4x
+    Esperado: 4º bloqueado com toast "Máximo de 3 carrosséis por Flow."; validate()/checklist também acusam
+
+[ ] Barra de formatação aplica negrito/itálico à seleção
+    Entrada: selecionar trecho + rtFormat(id,'b') e rtFormat(id,'i')
+    Esperado: conteúdo vira **trecho** e ***trecho***; sem texto de apoio abaixo do campo
+
+[ ] Carrossel <2 imagens válidas bloqueia publicação
+    Esperado: checklist "Adicione ao menos duas imagens ao carrossel"
+
+[ ] Texto alternativo obrigatório por imagem no carrossel
+    Esperado: checklist "Preencha o texto alternativo de cada imagem do carrossel"
+
+[ ] Texto formatado renderiza negrito/itálico/lista/link na prévia
+    Entrada: content "**b**\n- item\n[texto](url)"
+    Esperado: <b>, <li>, .rt-link na .wa-richtext
+
+[ ] Regra 8.2 — pelo menos um campo de entrada
+    Entrada: tela só com componentes de exibição
+    Esperado: checklist e validate() "Adicione ao menos um campo de entrada à tela…"; Aceite conta como entrada
+
+[ ] Componentes de exibição não têm toggle "obrigatório"
+    Esperado: image/carousel/heading/subheading/caption/richtext sem toggle; badge "Obrigatório" só em entradas
+
+[ ] Aceite: texto até 120 chars + "Obrigatório para enviar"; prévia com caixa de marcar
+    Esperado: LABEL_MAX.consent = 120; .wa-check-box na prévia
+
+[ ] Limites dos textos de exibição
+    Entrada: digitar acima do limite em cada tipo
+    Esperado: Título e Subtítulo até 80; Legenda e Texto formatado até 4096; maxlength + contador (xc_) atualizado e truncamento em setContent
+
+[ ] Reposicionar/excluir componentes de exibição (mesmo padrão dos campos)
+    Esperado: moveField e removeField funcionam para os novos tipos
+```
+
 ---
 
-*Documento gerado em 28/05/2026 · Atualizado em 23/06/2026 — Referência: CCM-2743*
+*Documento gerado em 28/05/2026 · Atualizado em 10/07/2026 — Referências: CCM-2743, CCM-3070*

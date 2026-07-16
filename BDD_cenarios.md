@@ -1055,4 +1055,82 @@ Feature: Visualização de Flow (somente leitura)
 
 ---
 
-*Documento gerado em 28/05/2026 · Atualizado em 23/06/2026 — Referência: CCM-2743*
+## Feature: Componentes de Exibição e Aceite (CCM-3070)
+
+```gherkin
+Feature: Componentes de exibição e aceite no construtor de Flow
+  Como operador
+  Quero adicionar imagens, textos formatados e um aceite à tela do Flow
+  Para enriquecer a tela sem sair da arquitetura de uma tela / modo estático
+
+  Background:
+    Dado que estou criando um Flow no construtor
+    E o painel "Adicionar componente" agrupa itens em "Exibição" e "Entradas"
+
+  Scenario: Adicionar imagem por upload
+    Quando adiciono o componente "Imagem" e subo um arquivo JPG dentro do limite
+    Então a imagem é convertida para base64 e aparece na prévia
+    E o Flow pode ser publicado (havendo ao menos um campo de entrada)
+
+  Scenario: Adicionar imagem por URL válida
+    Quando adiciono o componente "Imagem", escolho origem "URL" e informo uma URL .jpg/.png válida
+    E aciono "Carregar"
+    Então a plataforma converte a imagem para base64 e ela aparece na prévia
+
+  Scenario: URL de imagem que não carrega
+    Quando informo uma URL inválida, com timeout ou imagem inexistente
+    E aciono "Carregar"
+    Então a imagem não é adicionada
+    E é exibido "Não foi possível carregar esta imagem."
+
+  Scenario: Carrossel exige de 2 a 3 imagens
+    Dado que adicionei o componente "Carrossel"
+    Quando deixo menos de 2 imagens preenchidas
+    Então a publicação é bloqueada com "Adicione ao menos duas imagens ao carrossel."
+    E ao atingir 3 imagens o botão "Adicionar imagem" fica desabilitado (limite implícito)
+
+  Scenario: Máximo de 3 carrosséis por Flow
+    Dado que a tela já tem 3 componentes "Carrossel"
+    Quando tento adicionar um quarto carrossel
+    Então a ação é bloqueada com "Máximo de 3 carrosséis por Flow."
+
+  Scenario: Barra de formatação do Texto formatado
+    Dado que adicionei "Texto formatado" e selecionei um trecho
+    Quando aciono Negrito ou Itálico na barra
+    Então o trecho é envolvido por **negrito** / *itálico* e a prévia reflete a formatação
+
+  Scenario: Texto alternativo obrigatório no carrossel
+    Dado um carrossel com 2 imagens
+    Quando alguma imagem está sem texto alternativo
+    Então o checklist pede "Preencha o texto alternativo de cada imagem do carrossel"
+
+  Scenario: Texto formatado na prévia
+    Quando adiciono "Texto formatado" com negrito e lista
+    Então a prévia exibe o texto com a formatação aplicada
+    E o painel informa a exigência de Flow JSON v5.1+
+
+  Scenario: Componentes de exibição não geram dado
+    Dado que a tela tem Imagem, Carrossel, Título, Subtítulo, Legenda e Texto formatado
+    Então esses componentes não geram variável nem coluna de relatório
+
+  Scenario: Aceite como caixa de marcar
+    Quando adiciono o componente "Aceite" e defino o texto (até 120 caracteres)
+    E marco "Obrigatório para enviar"
+    Então a prévia exibe uma caixa de marcar com o texto
+    E o Aceite conta como campo de entrada e gera valor sim/não
+
+  Scenario: Não publicar só com componentes de exibição (regra 8.2)
+    Dado que a tela tem apenas imagem e textos, sem nenhum campo de entrada
+    Quando tento publicar
+    Então a ação é bloqueada com "Adicione ao menos um campo de entrada à tela antes de publicar o Flow."
+
+  Scenario: Reposicionar e excluir componentes
+    Dado que a tela tem uma imagem acima de um texto
+    Quando reposiciono por drag-and-drop ou pelos controles mover para cima/baixo
+    Então a ordem é atualizada na estrutura e na prévia
+    E consigo remover Imagem e Carrossel do Flow
+```
+
+---
+
+*Documento gerado em 28/05/2026 · Atualizado em 10/07/2026 — Referências: CCM-2743, CCM-3070*
