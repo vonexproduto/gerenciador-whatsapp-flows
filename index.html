@@ -1087,7 +1087,7 @@ function addField(type) {
   if(HAS_INSTRUCTION.includes(type)) field.instruction='';
   // Componentes de exibição (CCM-3070)
   if(type==='image')       Object.assign(field,{source:'upload', url:'', img:'', alt:'', mode:'contain'});
-  if(type==='carousel')    Object.assign(field,{images:[{img:'',alt:''},{img:'',alt:''}], aspect:'4:3', mode:'contain'});
+  if(type==='carousel')    Object.assign(field,{images:[{img:'',alt:'',source:'upload',url:''},{img:'',alt:'',source:'upload',url:''}], aspect:'4:3', mode:'contain'});
   if(TEXT_DISPLAY_TYPES.includes(type)) field.content='';
   bFields.push(field);
   renderFields(); autosaveNow(); updatePreview();
@@ -1127,11 +1127,14 @@ function validateImgUrl(id){
   else {f.img='';toast('err','Não foi possível carregar esta imagem.');}
   renderFields();updatePreview();
 }
-function uploadCarouselImg(id,idx){const f=fld(id);if(!f)return;f.images[idx].img=IMG_PLACEHOLDERS[idx%3];autosaveNow();renderFields();updatePreview();}
+function uploadCarouselImg(id,idx){const f=fld(id);if(!f)return;f.images[idx].img=IMG_PLACEHOLDERS[idx%3];f.images[idx].url='';autosaveNow();renderFields();updatePreview();}
 function setCarouselAlt(id,idx,v){const f=fld(id);if(!f)return;f.images[idx].alt=v;autosaveNow();updatePreview();}
+function setCarouselSource(id,idx,v){const f=fld(id);if(!f)return;f.images[idx].source=v;renderFields();autosaveNow();updatePreview();}
+function setCarouselUrl(id,idx,v){const f=fld(id);if(!f)return;const im=f.images[idx];im.url=v;if(!v.trim()){im.img='';}else if(/^https?:\/\/.+\.(jpg|jpeg|png)(\?.*)?$/i.test(v.trim())){im.img=IMG_PLACEHOLDERS[idx%3];}else{im.img='';}autosaveNow();updatePreview();}
+function validateCarouselUrl(id,idx){const f=fld(id);if(!f)return;const im=f.images[idx];if(!im.url.trim())return;if(/^https?:\/\/.+\.(jpg|jpeg|png)(\?.*)?$/i.test(im.url.trim())){im.img=IMG_PLACEHOLDERS[idx%3];toast('ok','Imagem carregada e convertida para base64');}else{im.img='';toast('err','Não foi possível carregar esta imagem.');}renderFields();updatePreview();}
 function setCarouselAspect(id,v){const f=fld(id);if(!f)return;f.aspect=v;renderFields();autosaveNow();updatePreview();}
 function setCarouselMode(id,v){const f=fld(id);if(!f)return;f.mode=v;renderFields();autosaveNow();updatePreview();}
-function addCarouselImg(id){const f=fld(id);if(!f)return;if(f.images.length>=3){toast('err','Máximo de 3 imagens no carrossel.');return;}f.images.push({img:'',alt:''});renderFields();autosaveNow();updatePreview();}
+function addCarouselImg(id){const f=fld(id);if(!f)return;if(f.images.length>=3){toast('err','Máximo de 3 imagens no carrossel.');return;}f.images.push({img:'',alt:'',source:'upload',url:''});renderFields();autosaveNow();updatePreview();}
 function removeCarouselImg(id,idx){const f=fld(id);if(!f)return;if(f.images.length<=2){toast('err','Adicione ao menos duas imagens ao carrossel.');return;}f.images.splice(idx,1);renderFields();autosaveNow();updatePreview();}
 
 function removeField(id) {
@@ -1285,12 +1288,20 @@ function imageBody(f){
 
 function carouselBody(f){
   return `<div class="fields-grid">
-    ${(f.images||[]).map((im,idx)=>`
+    ${(f.images||[]).map((im,idx)=>{const upload=(im.source||'upload')==='upload';return `
       <div class="field-row span2 carousel-item">
         <div class="ci-hdr">Imagem ${idx+1}${(f.images.length>2)?` <button class="opt-del" onclick="removeCarouselImg(${f.id},${idx})"><i class="ph ph-trash"></i></button>`:''}</div>
-        ${im.img?`<img class="img-thumb sm" src="${im.img}">`:`<button class="btn btn-ghost btn-sm" onclick="uploadCarouselImg(${f.id},${idx})" style="align-self:flex-start"><i class="ph ph-upload-simple"></i> Upload</button>`}
-        <input class="ipt" type="text" value="${esc(im.alt||'')}" oninput="setCarouselAlt(${f.id},${idx},this.value)" placeholder="Texto alternativo (obrigatório)" style="margin-top:8px">
-      </div>`).join('')}
+        <label class="field-label">Origem <span class="req"></span></label>
+        <div class="radio-inline" style="margin-bottom:8px">
+          <label><input type="radio" name="csrc_${f.id}_${idx}" ${upload?'checked':''} onclick="setCarouselSource(${f.id},${idx},'upload')"> Upload</label>
+          <label><input type="radio" name="csrc_${f.id}_${idx}" ${!upload?'checked':''} onclick="setCarouselSource(${f.id},${idx},'url')"> URL</label>
+        </div>
+        ${upload
+          ? (im.img?`<img class="img-thumb sm" src="${im.img}">`:`<button class="btn btn-ghost btn-sm" onclick="uploadCarouselImg(${f.id},${idx})" style="align-self:flex-start"><i class="ph ph-upload-simple"></i> Escolher arquivo</button>`)
+          : `<div class="opt-row"><input class="ipt" type="text" value="${esc(im.url||'')}" oninput="setCarouselUrl(${f.id},${idx},this.value)" placeholder="https://...jpg"><button class="btn btn-ghost btn-sm" onclick="validateCarouselUrl(${f.id},${idx})" style="white-space:nowrap">Carregar</button></div>${im.img?`<img class="img-thumb sm" src="${im.img}" style="margin-top:8px">`:''}`}
+        <label class="field-label" style="margin-top:8px">Texto alternativo <span class="req"></span></label>
+        <input class="ipt" type="text" value="${esc(im.alt||'')}" oninput="setCarouselAlt(${f.id},${idx},this.value)" placeholder="Descrição da imagem (acessibilidade)">
+      </div>`;}).join('')}
     <div class="field-row span2">
       <button class="btn btn-ghost btn-sm" ${f.images.length>=3?'disabled':''} onclick="addCarouselImg(${f.id})" style="align-self:flex-start"><i class="ph ph-plus"></i> Adicionar imagem</button>
     </div>
@@ -1389,7 +1400,7 @@ function buildFieldCard(f) {
 /* Limites de caracteres por tipo de campo (Meta) */
 const LABEL_MAX = {short:20, text:20, radio:30, checkbox:30, dropdown:30, date:20, consent:120};
 /* Limite de caracteres dos textos de exibição (Meta) — CCM-3070 */
-const CONTENT_MAX = {heading:80, subheading:80, caption:4096, richtext:4096};
+const CONTENT_MAX = {heading:80, subheading:80, caption:409, richtext:4096};
 function contentMax(type){return CONTENT_MAX[type]||80;}
 const OPTION_MAX = 30;
 const SUBMIT_MAX = 30;
