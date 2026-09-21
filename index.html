@@ -255,6 +255,342 @@
 .view-mode .waba-select{pointer-events:none;background:var(--neutral-color-high-light);opacity:.7;}
 .view-mode .ipt:disabled,
 .view-mode .sel-wrap select:disabled{background:var(--neutral-color-high-light);color:var(--neutral-color-low-medium);cursor:not-allowed;opacity:1;}
+/* ══════════════════════════════════════════════════════════════
+   IA PANORÂMICA (CCM-3269)
+   ANGULAR MODULE: PanoramicAiModule — src/app/@modules/panoramic-ai/
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Botão de acesso no header ── */
+.hdr-ia{
+  position:relative;width:36px;height:36px;border-radius:8px;border:none;
+  background:var(--brand-color-primary-lightest);
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;color:var(--brand-color-primary-pure);
+  transition:background .15s,box-shadow .15s;
+}
+.hdr-ia:hover{background:var(--brand-color-primary-light);}
+.hdr-ia.active{
+  background:var(--brand-color-primary-pure);color:#fff;
+  box-shadow:0 0 0 3px var(--brand-color-primary-lightest);
+}
+/* pip de análise concluída aguardando leitura */
+.hdr-ia .pip-dot{
+  position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:var(--r-circ);
+  background:var(--feedback-color-success-pure);border:1.5px solid #fff;display:none;
+}
+.hdr-ia.has-news .pip-dot{display:block;}
+/* tooltip do header */
+.hdr-tip{
+  position:absolute;top:calc(100% + 8px);right:0;
+  background:var(--neutral-color-low-pure);color:#fff;
+  font-size:11px;font-weight:500;white-space:nowrap;
+  padding:5px 9px;border-radius:var(--r-sm);
+  opacity:0;pointer-events:none;transition:opacity .15s;z-index:120;
+}
+.hdr-ia:hover .hdr-tip{opacity:1;}
+
+/* ── Shell da view ── */
+.ia-wrap{display:flex;flex:1;flex-direction:column;overflow:hidden;}
+.ia-lhdr{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  padding:16px 24px 14px;background:var(--background-color-lightest);
+  flex-shrink:0;
+}
+.ia-title-row{display:flex;align-items:center;gap:10px;}
+.ia-title-row h3{font-size:20px;font-weight:500;color:var(--neutral-color-low-pure);}
+.ia-lhdr p{font-size:13px;color:var(--neutral-color-low-light);margin-top:2px;padding-left:42px;}
+.ia-mark{
+  width:30px;height:30px;border-radius:var(--r-sm);flex-shrink:0;
+  background:var(--brand-color-gradient);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;
+}
+.ia-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--brand-color-primary-lightest);color:var(--brand-color-primary-dark);
+  font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:var(--r-pill);
+  text-transform:uppercase;letter-spacing:.04em;
+}
+/* abas */
+.ia-tabs{
+  display:flex;gap:2px;padding:0 24px;background:var(--background-color-lightest);
+  border-bottom:1px solid var(--neutral-color-high-medium);flex-shrink:0;
+}
+.ia-tab{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:10px 14px;font-size:13px;font-weight:500;
+  color:var(--neutral-color-low-medium);cursor:pointer;background:none;border:none;
+  border-bottom:2px solid transparent;transition:color .15s,border-color .15s;
+}
+.ia-tab:hover{color:var(--brand-color-primary-pure);}
+.ia-tab.active{color:var(--brand-color-primary-pure);border-bottom-color:var(--brand-color-primary-pure);}
+.ia-tab .ia-tab-count{
+  background:var(--neutral-color-high-light);color:var(--neutral-color-low-medium);
+  font-size:10.5px;font-weight:600;border-radius:var(--r-pill);padding:1px 6px;
+}
+.ia-tab.active .ia-tab-count{background:var(--brand-color-primary-lightest);color:var(--brand-color-primary-dark);}
+/* corpo rolável */
+.ia-body{flex:1;overflow-y:auto;padding:20px 24px 32px;display:flex;flex-direction:column;gap:16px;}
+.ia-pane{display:flex;flex-direction:column;gap:16px;}
+/* itens de coluna rolável não podem encolher para caber na viewport */
+.ia-body > *, .ia-pane > *{flex-shrink:0;}
+
+/* ── Blocos de conteúdo ── */
+.ia-block{background:var(--background-color-lightest);border-radius:var(--r-xl);box-shadow:var(--shadow);overflow:hidden;}
+.ia-block-hdr{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 20px;border-bottom:1px solid var(--neutral-color-high-light);
+}
+.ia-block-hdr h4{font-size:14px;font-weight:600;color:var(--neutral-color-low-pure);display:flex;align-items:center;gap:8px;}
+.ia-block-hdr h4 i{font-size:17px;color:var(--brand-color-primary-pure);}
+.ia-block-hdr .ia-block-sub{font-size:11.5px;color:var(--neutral-color-low-light);font-weight:400;}
+.ia-block-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+
+/* ── Resumo executivo (destaque IA) ── */
+.ia-hero{
+  border-radius:var(--r-xl);padding:2px;background:var(--brand-color-gradient);
+  box-shadow:var(--shadow);
+}
+.ia-hero-in{background:var(--background-color-lightest);border-radius:18px;padding:18px 20px;}
+.ia-hero-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.ia-hero-top i{font-size:18px;color:var(--brand-color-primary-pure);}
+.ia-hero-top h4{font-size:14px;font-weight:600;color:var(--neutral-color-low-pure);}
+.ia-hero-in p{font-size:13.5px;line-height:1.65;color:var(--neutral-color-low-medium);}
+.ia-hero-in p + p{margin-top:8px;}
+
+/* ── Grade de cobertura ── */
+.ia-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.ia-stat{
+  background:var(--background-color-lightest);border:1px solid var(--neutral-color-high-light);
+  border-radius:var(--r-md);padding:12px 14px;
+}
+.ia-stat-lbl{font-size:11px;color:var(--neutral-color-low-light);display:flex;align-items:center;gap:5px;}
+.ia-stat-val{font-size:20px;font-weight:600;color:var(--neutral-color-low-pure);margin-top:4px;line-height:1.1;}
+.ia-stat-hint{font-size:11px;color:var(--neutral-color-low-light);margin-top:3px;}
+.ia-stat.muted .ia-stat-val{color:var(--neutral-color-low-light);}
+
+/* ── Item de tema / pergunta frequente ── */
+.ia-item{border:1px solid var(--neutral-color-high-light);border-radius:var(--r-md);overflow:hidden;}
+.ia-item-hdr{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;
+  transition:background .1s;
+}
+.ia-item-hdr:hover{background:#fafbfb;}
+.ia-item-main{flex:1;min-width:0;}
+.ia-item-title{font-size:13.5px;font-weight:500;color:var(--neutral-color-low-pure);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ia-item-meta{font-size:11.5px;color:var(--neutral-color-low-light);margin-top:3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ia-item-meta .sep{width:3px;height:3px;border-radius:var(--r-circ);background:var(--neutral-color-high-dark);}
+.ia-item-pct{font-size:15px;font-weight:600;color:var(--neutral-color-low-pure);min-width:44px;text-align:right;}
+.ia-item-caret{font-size:14px;color:var(--neutral-color-low-light);transition:transform .15s;}
+.ia-item.open .ia-item-caret{transform:rotate(180deg);}
+.ia-item-body{display:none;padding:0 14px 14px;border-top:1px solid var(--neutral-color-high-light);}
+.ia-item.open .ia-item-body{display:block;}
+/* barra de volume */
+.ia-bar{height:5px;border-radius:3px;background:var(--neutral-color-high-light);overflow:hidden;margin-top:7px;}
+.ia-bar > span{display:block;height:100%;border-radius:3px;background:var(--brand-color-primary-pure);}
+.ia-bar.sec > span{background:var(--brand-color-secundary-pure);}
+.ia-bar.ok  > span{background:var(--feedback-color-success-pure);}
+.ia-bar.warn> span{background:var(--feedback-color-helper-pure);}
+.ia-bar.err > span{background:var(--feedback-color-warning-pure);}
+/* exemplos reais */
+.ia-quotes{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.ia-quote{
+  background:var(--background-color-light);border-left:3px solid var(--neutral-color-high-dark);
+  border-radius:0 var(--r-sm) var(--r-sm) 0;padding:9px 12px;
+  font-size:12.5px;color:var(--neutral-color-low-medium);line-height:1.5;font-style:italic;
+}
+.ia-quote .ia-quote-src{display:block;font-style:normal;font-size:10.5px;color:var(--neutral-color-low-light);margin-top:5px;}
+.ia-sub-lbl{font-size:11px;font-weight:600;color:var(--neutral-color-low-light);text-transform:uppercase;letter-spacing:.05em;margin-top:12px;}
+
+/* ── Selo de validação em ligações ── */
+.ia-seal{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:500;padding:2px 8px;border-radius:var(--r-pill);
+  background:var(--brand-color-secundary-lightest);color:var(--brand-color-secundary-dark);
+}
+.ia-seal i{font-size:12px;}
+.ia-seal.none{background:var(--neutral-color-high-light);color:var(--neutral-color-low-light);}
+.ia-seal.gap{background:var(--feedback-color-helper-light);color:var(--feedback-color-helper-dark);}
+
+/* ── Argumentos dos atendentes ── */
+.ia-outcomes{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+.ia-outcome{
+  flex:1;min-width:120px;background:var(--background-color-light);
+  border-radius:var(--r-sm);padding:8px 10px;
+}
+.ia-outcome-lbl{font-size:10.5px;color:var(--neutral-color-low-light);}
+.ia-outcome-val{font-size:14px;font-weight:600;color:var(--neutral-color-low-pure);margin-top:2px;}
+.ia-eff{display:flex;align-items:center;gap:8px;}
+.ia-eff-val{font-size:15px;font-weight:600;min-width:44px;text-align:right;}
+.ia-eff-val.hi{color:var(--feedback-color-success-dark);}
+.ia-eff-val.md{color:var(--feedback-color-helper-dark);}
+.ia-eff-val.lo{color:var(--feedback-color-warning-dark);}
+
+/* ── Sugestões de melhoria ── */
+.ia-sugg{
+  display:flex;gap:12px;padding:14px;border:1px solid var(--neutral-color-high-light);
+  border-radius:var(--r-md);
+}
+.ia-sugg-ico{
+  width:30px;height:30px;border-radius:var(--r-sm);flex-shrink:0;
+  background:var(--brand-color-primary-lightest);color:var(--brand-color-primary-pure);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.ia-sugg-body{flex:1;min-width:0;}
+.ia-sugg-title{font-size:13.5px;font-weight:500;color:var(--neutral-color-low-pure);}
+.ia-sugg-desc{font-size:12.5px;color:var(--neutral-color-low-medium);line-height:1.55;margin-top:4px;}
+.ia-node{
+  display:inline-flex;align-items:center;gap:5px;margin-top:8px;
+  background:var(--background-color-light);border:1px solid var(--neutral-color-high-medium);
+  border-radius:var(--r-sm);padding:4px 9px;font-size:11.5px;color:var(--neutral-color-low-medium);
+}
+.ia-node i{font-size:13px;color:var(--brand-color-secundary-pure);}
+
+/* ── Comparativo (análise recorrente) ── */
+.ia-delta{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:600;}
+.ia-delta.up  {color:var(--feedback-color-success-dark);}
+.ia-delta.down{color:var(--feedback-color-warning-dark);}
+.ia-delta.flat{color:var(--neutral-color-low-light);}
+.ia-cmp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+
+/* ── Campo de prompt ── */
+.ia-chat{display:flex;flex-direction:column;gap:12px;}
+.ia-msg{display:flex;gap:10px;max-width:88%;}
+.ia-msg.me{align-self:flex-end;flex-direction:row-reverse;}
+.ia-msg-av{
+  width:28px;height:28px;border-radius:var(--r-circ);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;
+  background:var(--brand-color-gradient);
+}
+.ia-msg.me .ia-msg-av{background:var(--neutral-color-high-light);color:var(--neutral-color-low-medium);font-size:11px;font-weight:600;}
+.ia-msg-bub{
+  background:var(--background-color-light);border-radius:var(--r-md);
+  padding:10px 13px;font-size:13px;line-height:1.6;color:var(--neutral-color-low-pure);
+}
+.ia-msg.me .ia-msg-bub{background:var(--brand-color-primary-lightest);color:var(--brand-color-primary-dark);}
+.ia-msg-bub ul{margin:6px 0 0;padding-left:16px;display:flex;flex-direction:column;gap:3px;}
+.ia-msg-bub li{font-size:12.5px;line-height:1.5;}
+.ia-msg-time{font-size:10.5px;color:var(--neutral-color-low-light);margin-top:5px;}
+.ia-typing{display:flex;gap:4px;align-items:center;padding:3px 0;}
+.ia-typing span{width:6px;height:6px;border-radius:var(--r-circ);background:var(--neutral-color-high-dark);animation:iaBlink 1s infinite;}
+.ia-typing span:nth-child(2){animation-delay:.15s;}
+.ia-typing span:nth-child(3){animation-delay:.3s;}
+@keyframes iaBlink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+.ia-ask{display:flex;gap:8px;align-items:flex-end;margin-top:4px;}
+.ia-ask textarea{
+  flex:1;min-height:40px;max-height:120px;resize:none;
+  border:1px solid var(--neutral-color-high-medium);border-radius:var(--r-md);
+  padding:11px 12px;font-size:13px;font-family:inherit;color:var(--neutral-color-low-pure);
+  outline:none;line-height:1.4;
+}
+.ia-ask textarea:focus{border-color:var(--brand-color-secundary-pure);}
+.ia-ask textarea::placeholder{color:var(--neutral-color-high-dark);}
+.ia-ask .btn{height:40px;flex-shrink:0;}
+.ia-suggest{display:flex;gap:6px;flex-wrap:wrap;}
+.ia-chip{
+  background:var(--background-color-light);border:1px solid var(--neutral-color-high-medium);
+  border-radius:var(--r-pill);padding:5px 11px;font-size:11.5px;color:var(--neutral-color-low-medium);
+  cursor:pointer;transition:border-color .12s,color .12s;
+}
+.ia-chip:hover{border-color:var(--brand-color-primary-pure);color:var(--brand-color-primary-pure);}
+
+/* ── Estado vazio ── */
+.ia-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:52px 20px;text-align:center;
+}
+.ia-empty i{font-size:34px;color:var(--neutral-color-high-dark);}
+.ia-empty h4{font-size:14px;font-weight:600;color:var(--neutral-color-low-medium);}
+.ia-empty p{font-size:12.5px;color:var(--neutral-color-low-light);max-width:340px;}
+
+/* ── Status extras da listagem de análises ── */
+.b-proc{background:var(--brand-color-secundary-lightest);color:var(--brand-color-secundary-dark);}
+.b-proc::before{background:var(--brand-color-secundary-pure);animation:iaPulse 1.2s infinite;}
+@keyframes iaPulse{0%,100%{opacity:1}50%{opacity:.25}}
+.ia-type{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--neutral-color-low-medium);}
+.ia-type i{font-size:13px;color:var(--neutral-color-low-light);}
+
+/* ── Modal: nova análise ── */
+.ia-form{display:flex;flex-direction:column;gap:14px;margin-top:6px;}
+.ia-dates{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.ia-range-info{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:12px;color:var(--neutral-color-low-medium);
+  background:var(--background-color-light);border-radius:var(--r-sm);padding:8px 11px;
+}
+.ia-range-info strong{color:var(--neutral-color-low-pure);font-weight:600;}
+.ia-range-info.err{background:var(--feedback-color-warning-light);color:var(--feedback-color-warning-dark);}
+.ia-recur{
+  border:1px solid var(--neutral-color-high-medium);border-radius:var(--r-md);padding:12px 14px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.modal.lg{max-width:560px;}
+
+/* ── Coleta em variáveis ── */
+.ia-var{
+  display:flex;gap:12px;align-items:flex-start;
+  border:1px solid var(--neutral-color-high-light);border-radius:var(--r-md);padding:14px;
+}
+.ia-var-body{flex:1;min-width:0;}
+.ia-var-prompt{font-size:13px;color:var(--neutral-color-low-pure);line-height:1.5;}
+.ia-var-target{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.ia-var-code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+  background:var(--brand-color-secundary-lightest);color:var(--brand-color-secundary-dark);
+  border-radius:var(--r-sm);padding:3px 8px;
+}
+.ia-ai-src{
+  display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;
+  background:var(--brand-color-primary-lightest);color:var(--brand-color-primary-dark);
+  border-radius:var(--r-pill);padding:2px 8px;
+}
+.ia-ai-src i{font-size:11px;}
+.ia-fill-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.ia-fill{
+  display:flex;align-items:center;gap:10px;font-size:12.5px;
+  background:var(--background-color-light);border-radius:var(--r-sm);padding:7px 10px;
+}
+.ia-fill .who{color:var(--neutral-color-low-medium);min-width:150px;}
+.ia-fill .val{color:var(--neutral-color-low-pure);font-weight:500;flex:1;}
+.ia-fill .val.empty{color:var(--neutral-color-low-light);font-weight:400;font-style:italic;}
+
+/* ── Recorrentes ── */
+.ia-recur-card{
+  display:flex;align-items:center;gap:14px;
+  border:1px solid var(--neutral-color-high-light);border-radius:var(--r-md);padding:14px;
+}
+.ia-recur-body{flex:1;min-width:0;}
+.ia-recur-name{font-size:13.5px;font-weight:500;color:var(--neutral-color-low-pure);}
+.ia-recur-meta{font-size:11.5px;color:var(--neutral-color-low-light);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+/* ── Painel fixo do prompt, à direita do relatório ── */
+.ia-report-split{display:flex;flex:1;overflow:hidden;}
+.ia-report-split > .ia-body{flex:1;min-width:0;}
+.ia-dock{
+  width:390px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;
+  background:var(--background-color-lightest);
+  border-left:1px solid var(--neutral-color-high-medium);
+}
+.ia-dock-hdr{padding:16px 18px 14px;border-bottom:1px solid var(--neutral-color-high-light);flex-shrink:0;}
+.ia-dock-hdr h4{font-size:14px;font-weight:600;color:var(--neutral-color-low-pure);display:flex;align-items:center;gap:8px;}
+.ia-dock-hdr h4 i{font-size:17px;color:var(--brand-color-primary-pure);}
+.ia-dock-hdr p{font-size:11.5px;color:var(--neutral-color-low-light);margin-top:5px;line-height:1.5;}
+.ia-dock-body{flex:1;overflow-y:auto;padding:16px 18px;}
+.ia-dock-foot{
+  border-top:1px solid var(--neutral-color-high-light);padding:12px 18px 14px;flex-shrink:0;
+  display:flex;flex-direction:column;gap:9px;
+}
+.ia-dock .ia-msg{max-width:100%;}
+.ia-dock .ia-suggest{max-height:96px;overflow-y:auto;}
+.ia-dock .ia-ask .btn{padding:0 12px;}
+
+@media (max-width:1100px){
+  .ia-stats{grid-template-columns:repeat(2,1fr);}
+  .ia-cmp-grid{grid-template-columns:1fr;}
+  /* telas estreitas: o painel volta a empilhar abaixo do relatório */
+  .ia-report-split{flex-direction:column;overflow-y:auto;}
+  .ia-report-split > .ia-body{overflow:visible;flex:none;}
+  .ia-dock{width:auto;border-left:none;border-top:1px solid var(--neutral-color-high-medium);max-height:460px;}
+}
 </style>
 </head>
 <body>
@@ -283,6 +619,12 @@
       </nav>
     </div>
     <div class="hdr-right">
+      <!-- ANGULAR: ponto de entrada da IA Panorâmica (CCM-3269) — <app-panoramic-ai-trigger> -->
+      <button class="hdr-ia" id="hdrIa" onclick="showIA()" aria-label="IA Panorâmica">
+        <i class="ph ph-sparkle"></i>
+        <span class="pip-dot"></span>
+        <span class="hdr-tip">IA Panorâmica</span>
+      </button>
       <button class="hdr-plus" title="Criar novo" onclick="showBuilder(null)"><i class="ph ph-plus"></i></button>
       <button class="hdr-icon" title="Notificações"><i class="ph ph-tray"></i><span class="pip">22</span></button>
       <button class="hdr-icon" title="Ajuda"><i class="ph ph-question"></i></button>
@@ -599,6 +941,163 @@
         </div><!-- /builder-body -->
       </div><!-- /v-builder -->
 
+      <!-- ── VIEW: IA PANORÂMICA (CCM-3269) ── -->
+      <!-- ANGULAR: PanoramicAiComponent — src/app/@modules/panoramic-ai/components/panoramic-ai/ -->
+      <div id="v-ia" class="ia-wrap" style="display:none;">
+
+        <!-- ══ HOME: histórico, recorrentes e coleta em variáveis ══ -->
+        <div id="ia-home" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+          <div class="ia-lhdr">
+            <div>
+              <div class="ia-title-row">
+                <!-- ANGULAR: <ccm-button mini type="quinary"> -->
+                <button class="back-btn" onclick="showListing()" title="Voltar">
+                  <i class="ph ph-arrow-left"></i>
+                </button>
+                <span class="ia-mark"><i class="ph ph-sparkle"></i></span>
+                <h3>IA Panorâmica</h3>
+                <span class="ia-tag"><i class="ph ph-shield-check"></i> IA da Vonex</span>
+              </div>
+              <p>Analisa uma jornada de ponta a ponta e entrega perguntas frequentes, argumentos dos atendentes e sugestões de melhoria</p>
+            </div>
+            <!-- ANGULAR: <ccm-button type="primary"> -->
+            <button class="btn btn-prim btn-lg" onclick="openIaNew()">
+              <i class="ph ph-sparkle"></i> Nova análise
+            </button>
+          </div>
+
+          <!-- ANGULAR: <mat-tab-group> ou tabs locais do componente -->
+          <div class="ia-tabs">
+            <button class="ia-tab active" id="iaTab-hist"  onclick="iaTab('hist')">
+              <i class="ph ph-clock-counter-clockwise"></i> Histórico de análises
+              <span class="ia-tab-count" id="iaHistCount">0</span>
+            </button>
+            <button class="ia-tab" id="iaTab-recur" onclick="iaTab('recur')">
+              <i class="ph ph-arrows-clockwise"></i> Análises recorrentes
+            </button>
+            <button class="ia-tab" id="iaTab-vars"  onclick="iaTab('vars')">
+              <i class="ph ph-brackets-curly"></i> Coleta em variáveis
+            </button>
+          </div>
+
+          <div class="ia-body">
+
+            <!-- ── ABA: HISTÓRICO ── -->
+            <div class="ia-pane" id="iaPane-hist">
+              <!-- ANGULAR: d-flex gap-8 align-items-center -->
+              <div class="fbar">
+                <div class="inp-search">
+                  <i class="ph ph-magnifying-glass"></i>
+                  <input type="text" id="iaSearch" placeholder="Pesquisar jornada" oninput="renderIaHistory()">
+                </div>
+                <div class="sel-filter" style="flex:0 0 190px">
+                  <select id="iaFilterStatus" onchange="renderIaHistory()">
+                    <option value="">Status</option>
+                    <option value="concluida">Concluída</option>
+                    <option value="processando">Processando</option>
+                    <option value="falha">Falha</option>
+                  </select>
+                  <i class="ph ph-caret-down"></i>
+                </div>
+                <div class="sel-filter" style="flex:0 0 170px">
+                  <select id="iaFilterType" onchange="renderIaHistory()">
+                    <option value="">Tipo</option>
+                    <option value="manual">Manual</option>
+                    <option value="recorrente">Recorrente</option>
+                  </select>
+                  <i class="ph ph-caret-down"></i>
+                </div>
+              </div>
+
+              <div class="card">
+                <!-- ANGULAR: <table mat-table [dataSource]="analyses$"> -->
+                <table class="dtable">
+                  <thead>
+                    <tr>
+                      <th>Jornada</th>
+                      <th>Período analisado</th>
+                      <th>Gerada em</th>
+                      <th>Solicitante</th>
+                      <th>Tipo</th>
+                      <th>Status</th>
+                      <th style="text-align:right">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="iaHistBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- ── ABA: RECORRENTES ── -->
+            <div class="ia-pane" id="iaPane-recur" style="display:none">
+              <div class="info-banner">
+                <i class="ph ph-info"></i>
+                <span>Cada execução recorrente respeita o intervalo máximo de 30 dias e apresenta comparativo com a execução anterior.</span>
+              </div>
+              <div class="ia-block">
+                <div class="ia-block-hdr">
+                  <h4><i class="ph ph-arrows-clockwise"></i> Jornadas com análise recorrente</h4>
+                  <button class="btn btn-sec btn-sm" onclick="openIaNew(true)">
+                    <i class="ph ph-plus"></i> Configurar recorrência
+                  </button>
+                </div>
+                <div class="ia-block-body" id="iaRecurList"></div>
+              </div>
+            </div>
+
+            <!-- ── ABA: COLETA EM VARIÁVEIS ── -->
+            <div class="ia-pane" id="iaPane-vars" style="display:none">
+              <div class="info-banner">
+                <i class="ph ph-info"></i>
+                <span>A extração ocorre durante a geração da análise — não em tempo real durante a conversa. A IA busca a informação em qualquer ponto da conversa, independentemente do nó que a solicitaria.</span>
+              </div>
+              <div class="ia-block">
+                <div class="ia-block-hdr">
+                  <h4><i class="ph ph-brackets-curly"></i> Prompts fixos de extração</h4>
+                  <button class="btn btn-sec btn-sm" onclick="openIaVar()">
+                    <i class="ph ph-plus"></i> Novo prompt de extração
+                  </button>
+                </div>
+                <div class="ia-block-body" id="iaVarList"></div>
+              </div>
+            </div>
+
+          </div><!-- /ia-body -->
+        </div><!-- /ia-home -->
+
+        <!-- ══ RELATÓRIO DA ANÁLISE ══ -->
+        <!-- ANGULAR: PanoramicReportComponent — src/app/@modules/panoramic-ai/components/panoramic-report/ -->
+        <div id="ia-report" style="flex:1;display:none;flex-direction:column;overflow:hidden;">
+
+          <div class="builder-lhdr">
+            <div class="breadcrumb">
+              <button class="back-btn" onclick="showIaHome()" title="Voltar ao histórico">
+                <i class="ph ph-arrow-left"></i>
+              </button>
+              <span class="bc-item">IA Panorâmica</span>
+              <i class="ph ph-caret-right bc-sep"></i>
+              <span class="bc-cur" id="iaRepCrumb">Análise</span>
+            </div>
+            <div class="builder-actions">
+              <button class="btn btn-quat" onclick="iaExport()">
+                <i class="ph ph-download-simple"></i> Exportar
+              </button>
+              <button class="btn btn-sec" onclick="iaRegenerate()">
+                <i class="ph ph-arrows-clockwise"></i> Gerar novamente
+              </button>
+            </div>
+          </div>
+
+          <div class="ia-report-split">
+            <div class="ia-body" id="iaReportBody"></div>
+            <!-- ANGULAR: <app-panoramic-ask-panel> — painel fixo, sempre acessível -->
+            <aside class="ia-dock" id="iaDock"></aside>
+          </div>
+        </div><!-- /ia-report -->
+
+      </div><!-- /v-ia -->
+
     </div><!-- /views -->
   </div><!-- /app-body -->
 </div><!-- /app -->
@@ -688,6 +1187,133 @@
     <div class="modal-ftr">
       <!-- ANGULAR: <ccm-button type="primary"> -->
       <button class="btn btn-prim" onclick="closePubError()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: nova análise da IA Panorâmica (CCM-3269) ══ -->
+<!-- ANGULAR: MatDialog.open(NewPanoramicAnalysisModalComponent) — src/app/@modules/panoramic-ai/modals/new-analysis/ -->
+<div class="modal-bg" id="iaNewModal">
+  <div class="modal lg">
+    <div class="modal-hdr">
+      <h4>Nova análise</h4>
+      <button class="modal-close" onclick="closeIaNew()"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p>A IA da Vonex analisa o fluxo da jornada, seus relatórios, as conversas e os atendimentos humanos (mensagem e voz) do período selecionado.</p>
+
+      <div class="ia-form">
+        <div class="field-row">
+          <label class="field-label">Jornada de automação <span class="req"></span></label>
+          <div class="sel-wrap">
+            <!-- ANGULAR: <mat-select formControlName="journeyId"> -->
+            <select id="iaJourney" onchange="iaValidateRange()"></select>
+            <i class="ph ph-caret-down"></i>
+          </div>
+          <div class="field-hint">Cada análise contempla uma única jornada.</div>
+        </div>
+
+        <div class="ia-dates">
+          <div class="field-row">
+            <label class="field-label">Data inicial <span class="req"></span></label>
+            <input class="ipt" type="date" id="iaStart" onchange="iaValidateRange()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">Data final <span class="req"></span></label>
+            <input class="ipt" type="date" id="iaEnd" onchange="iaValidateRange()">
+          </div>
+        </div>
+
+        <div class="ia-range-info" id="iaRangeInfo">
+          <span id="iaRangeTxt">Selecione o período da análise.</span>
+          <span>Máx. <strong>30 dias</strong></span>
+        </div>
+
+        <!-- aviso de volume baixo — limite mínimo [a definir] -->
+        <div class="modal-alert warn" id="iaLowVolume" style="display:none">
+          <i class="ph ph-warning"></i>
+          <span id="iaLowVolumeTxt"></span>
+        </div>
+
+        <div class="ia-recur">
+          <div class="toggle-row">
+            <div class="toggle-wrap">
+              <span class="toggle" id="iaRecurToggle" onclick="iaToggleRecur()"></span>
+              <span>Repetir esta análise automaticamente</span>
+            </div>
+          </div>
+          <div id="iaRecurOpts" style="display:none">
+            <div class="field-row">
+              <label class="field-label">Periodicidade</label>
+              <div class="sel-wrap">
+                <select id="iaRecurFreq">
+                  <option value="semanal">Semanal</option>
+                  <option value="quinzenal">Quinzenal</option>
+                  <option value="mensal">Mensal (últimos 30 dias)</option>
+                </select>
+                <i class="ph ph-caret-down"></i>
+              </div>
+              <div class="field-hint">A execução recorrente apresenta comparativo com a execução anterior.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-alert info">
+          <i class="ph ph-info"></i>
+          <span>A geração roda em segundo plano. Você pode continuar navegando e será notificado ao término.</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-quat btn-lg" onclick="closeIaNew()">Cancelar</button>
+      <button class="btn btn-prim btn-lg" id="iaGenBtn" onclick="iaGenerate()">
+        <i class="ph ph-sparkle"></i> Gerar análise
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: prompt fixo de extração em variável (CCM-3269) ══ -->
+<!-- ANGULAR: MatDialog.open(ExtractionPromptModalComponent) — src/app/@modules/panoramic-ai/modals/extraction-prompt/ -->
+<div class="modal-bg" id="iaVarModal">
+  <div class="modal lg">
+    <div class="modal-hdr">
+      <h4>Prompt de extração</h4>
+      <button class="modal-close" onclick="closeIaVar()"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p>Descreva a informação que a IA deve buscar na conversa e a variável que receberá o valor encontrado.</p>
+      <div class="ia-form">
+        <div class="field-row">
+          <label class="field-label">Jornada <span class="req"></span></label>
+          <div class="sel-wrap">
+            <select id="iaVarJourney"></select>
+            <i class="ph ph-caret-down"></i>
+          </div>
+        </div>
+        <div class="field-row">
+          <label class="field-label">Prompt <span class="req"></span></label>
+          <textarea class="ipt" id="iaVarPrompt" rows="3" style="height:auto;padding:10px 12px;resize:vertical;font-family:inherit"
+            placeholder="Ex.: Capturar o motivo de cancelamento informado pelo contato"></textarea>
+          <div class="field-hint">A IA busca a informação em qualquer ponto da conversa.</div>
+        </div>
+        <div class="field-row">
+          <label class="field-label">Variável de destino <span class="req"></span></label>
+          <div class="sel-wrap">
+            <select id="iaVarTarget"></select>
+            <i class="ph ph-caret-down"></i>
+          </div>
+          <div class="field-hint">Quando a informação não é encontrada, a variável permanece vazia — nenhum valor é inferido.</div>
+        </div>
+        <div class="modal-alert info">
+          <i class="ph ph-info"></i>
+          <span>Todo valor preenchido pela IA carrega a origem “Preenchido por IA” onde a variável for exibida. Valor já existente não é sobrescrito.</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-quat btn-lg" onclick="closeIaVar()">Cancelar</button>
+      <button class="btn btn-prim btn-lg" onclick="iaSaveVar()">Salvar prompt</button>
     </div>
   </div>
 </div>
@@ -881,6 +1507,8 @@ const SHORT_PLACEHOLDER = {
 function showListing() {
   document.getElementById('v-listing').style.display = 'flex';
   document.getElementById('v-builder').style.display = 'none';
+  document.getElementById('v-ia').style.display = 'none';
+  document.getElementById('hdrIa').classList.remove('active');
   document.querySelector('.sidebar').style.display = '';
   renderListing();
 }
@@ -892,6 +1520,8 @@ function showBuilder(flowId, viewOnly=false) {
   isViewMode = !!viewOnly;
   document.getElementById('v-listing').style.display = 'none';
   document.getElementById('v-builder').style.display = 'flex';
+  document.getElementById('v-ia').style.display = 'none';
+  document.getElementById('hdrIa').classList.remove('active');
   document.querySelector('.sidebar').style.display = 'none';
   initBuilder(flowId);
   applyViewMode();
@@ -1723,6 +2353,844 @@ function toast(type,msg) {
 document.querySelectorAll('.modal-bg').forEach(m=>{
   m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
 });
+
+
+/* ════════════════════════════════════════════════════════════
+   IA PANORÂMICA (CCM-3269)
+   ANGULAR: PanoramicAiService — src/app/@modules/panoramic-ai/services/
+   Regras: análise de 1 jornada, período livre de até 30 dias,
+   geração em segundo plano, prompt restrito ao recorte da análise.
+════════════════════════════════════════════════════════════ */
+
+/* ── Jornadas de automação disponíveis (mock) ── */
+const IA_JOURNEYS = [
+  {id:'j1', name:'Negociação de dívida — Syscob',      convPerDay:43},
+  {id:'j2', name:'Cobrança preventiva D+5',            convPerDay:28},
+  {id:'j3', name:'Renovação de contrato',              convPerDay:11},
+  {id:'j4', name:'Pesquisa de satisfação pós-venda',   convPerDay:6},
+  {id:'j5', name:'Onboarding cliente novo',            convPerDay:9},
+];
+
+/* ── Variáveis de contato disponíveis como destino ── */
+const IA_VARIABLES = [
+  {id:'v1', code:'{{motivo_cancelamento}}', label:'Motivo de cancelamento'},
+  {id:'v2', code:'{{melhor_data_pagamento}}', label:'Melhor data de pagamento'},
+  {id:'v3', code:'{{canal_preferido}}',     label:'Canal preferido de contato'},
+  {id:'v4', code:'{{concorrente_citado}}',  label:'Concorrente citado'},
+  {id:'v5', code:'{{profissao}}',           label:'Profissão informada'},
+];
+
+/* ── Prompts fixos de extração configurados ── */
+let IA_VARS = [
+  {
+    id:'p1', journeyId:'j1',
+    prompt:'Capturar o motivo de cancelamento informado pelo contato',
+    varId:'v1', createdBy:'Lucas Rehem',
+    fills:[
+      {who:'Contato 11 98842-1190', val:'Preço acima do orçamento'},
+      {who:'Contato 11 99120-7745', val:'Mudança de operadora'},
+      {who:'Contato 21 98811-3320', val:''},
+    ],
+  },
+  {
+    id:'p2', journeyId:'j1',
+    prompt:'Identificar a melhor data de pagamento citada espontaneamente pelo contato',
+    varId:'v2', createdBy:'Camila Alves',
+    fills:[
+      {who:'Contato 11 98842-1190', val:'Dia 10, após o salário'},
+      {who:'Contato 31 99770-2214', val:'Dia 05'},
+    ],
+  },
+];
+
+/* ── Análises geradas ── */
+let IA_ANALYSES = [
+  {id:'a1', journeyId:'j1', start:'2026-08-01', end:'2026-08-30', generatedAt:'30/08/2026 08:12',
+   user:'Lucas Rehem', type:'recorrente', status:'concluida', hasPrev:true, qa:[]},
+  {id:'a2', journeyId:'j2', start:'2026-08-10', end:'2026-08-28', generatedAt:'28/08/2026 17:44',
+   user:'Camila Alves', type:'manual', status:'concluida', hasPrev:false, qa:[]},
+  {id:'a3', journeyId:'j1', start:'2026-07-01', end:'2026-07-30', generatedAt:'30/07/2026 08:10',
+   user:'Lucas Rehem', type:'recorrente', status:'concluida', hasPrev:false, qa:[]},
+  {id:'a4', journeyId:'j3', start:'2026-08-05', end:'2026-08-25', generatedAt:'25/08/2026 14:03',
+   user:'Suzany Ribeiro', type:'manual', status:'falha', hasPrev:false, qa:[]},
+];
+
+/* ── Configurações de recorrência ── */
+let IA_RECURRING = [
+  {id:'r1', journeyId:'j1', freq:'mensal',  next:'30/09/2026', active:true,  lastId:'a1'},
+  {id:'r2', journeyId:'j2', freq:'semanal', next:'07/09/2026', active:false, lastId:'a2'},
+];
+
+/* ── Conteúdo do relatório (gerado pela IA) ── */
+const IA_REPORT = {
+  j1:{
+    summary:[
+      'No período analisado, <strong>1.284 conversas</strong> passaram pela jornada e <strong>412 geraram atendimento humano</strong>. Um terço das dúvidas dos contatos gira em torno de <strong>descontos e condições de pagamento</strong>, tema que o fluxo hoje responde apenas parcialmente e que concentra o maior volume de transbordo para a operação.',
+      'Os argumentos mais eficazes são os que trazem <strong>ganho imediato e verificável</strong> — desconto à vista no mesmo dia (68% de acordos) e retirada da negativação em até 5 dias úteis (61%). Argumentos genéricos de prazo têm eficácia abaixo de 40% e ocupam 18% dos atendimentos.',
+      '<strong>Negativação/Serasa</strong> e <strong>parcelamento no cartão</strong> somam 21% das perguntas e não possuem resposta automática na jornada — são as duas oportunidades de maior impacto para reduzir transbordo.',
+    ],
+    coverage:{conversations:1284, humanTotal:412, humanText:318, humanVoice:94, callsTranscribed:87, callsSkipped:7},
+    themes:[
+      {name:'Descontos e condições de pagamento', volume:412, pct:32, calls:41, gap:false,
+       examples:[
+         {txt:'Consigo um desconto maior se eu pagar tudo hoje?', src:'Conversa #8842 · 12/08'},
+         {txt:'Qual o valor mínimo que vocês aceitam pra fechar?', src:'Conversa #9017 · 19/08'},
+         {txt:'Esse desconto vale pra todas as parcelas atrasadas?', src:'Atendimento por voz #221 · 22/08'},
+       ]},
+      {name:'Prazos e data de vencimento', volume:268, pct:21, calls:29, gap:false,
+       examples:[
+         {txt:'Posso mudar o vencimento para o dia 10?', src:'Conversa #8760 · 08/08'},
+         {txt:'Se eu pagar amanhã ainda vale a proposta?', src:'Conversa #9134 · 24/08'},
+       ]},
+      {name:'Segunda via e comprovante', volume:205, pct:16, calls:18, gap:false,
+       examples:[
+         {txt:'Manda o boleto de novo, não achei aqui', src:'Conversa #8901 · 15/08'},
+         {txt:'Já paguei, como envio o comprovante?', src:'Conversa #9203 · 26/08'},
+       ]},
+      {name:'Negativação e Serasa', volume:154, pct:12, calls:33, gap:true,
+       examples:[
+         {txt:'Em quanto tempo meu nome sai do Serasa depois que eu pagar?', src:'Conversa #8815 · 11/08'},
+         {txt:'Meu nome já está negativado? Não recebi aviso', src:'Atendimento por voz #198 · 14/08'},
+         {txt:'Se eu fizer o acordo hoje já tira a restrição?', src:'Conversa #9088 · 21/08'},
+       ]},
+      {name:'Parcelamento no cartão', volume:116, pct:9, calls:12, gap:true,
+       examples:[
+         {txt:'Dá pra parcelar no cartão de crédito?', src:'Conversa #8977 · 17/08'},
+         {txt:'Aceita cartão em quantas vezes sem juros?', src:'Conversa #9155 · 25/08'},
+       ]},
+      {name:'Cancelamento do serviço', volume:77, pct:6, calls:9, gap:false,
+       examples:[
+         {txt:'Não quero mais o serviço, como cancelo?', src:'Conversa #8833 · 12/08'},
+       ]},
+      {name:'Outros', volume:52, pct:4, calls:4, gap:false,
+       examples:[
+         {txt:'Vocês têm loja física aqui em Campinas?', src:'Conversa #9061 · 20/08'},
+       ]},
+    ],
+    args:[
+      {name:'Desconto por pagamento à vista até o fim do dia', uses:187, eff:68, calls:24,
+       outcomes:{deal:127, callback:38, refusal:22},
+       note:'Maior eficácia quando o valor final é dito antes da condição de prazo.'},
+      {name:'Retirada da negativação em até 5 dias úteis', uses:96, eff:61, calls:31,
+       outcomes:{deal:59, callback:24, refusal:13},
+       note:'Confirmado nas ligações como o argumento que mais destrava objeção de desconfiança.'},
+      {name:'Parcelamento com entrada reduzida', uses:143, eff:54, calls:19,
+       outcomes:{deal:77, callback:41, refusal:25},
+       note:'Eficácia cai para 31% quando apresentado antes do desconto à vista.'},
+      {name:'Prazo estendido para a próxima fatura', uses:74, eff:38, calls:8,
+       outcomes:{deal:28, callback:30, refusal:16},
+       note:'Alto índice de retorno agendado sem desfecho — gera reatendimento.'},
+      {name:'Encaminhamento para supervisor com alçada maior', uses:41, eff:27, calls:5,
+       outcomes:{deal:11, callback:17, refusal:13},
+       note:'Usado como último recurso; concentra os atendimentos mais longos.'},
+    ],
+    suggestions:[
+      {title:'Responder o prazo de retirada da negativação no próprio fluxo',
+       desc:'154 contatos (12%) perguntaram sobre Serasa e não houve resposta automática — todos foram transbordados para atendimento humano.',
+       node:'Menu de dúvidas → nova opção “Negativação”'},
+      {title:'Incluir a condição de parcelamento no cartão na apresentação da proposta',
+       desc:'116 contatos (9%) perguntaram por cartão de crédito depois de já terem recebido a proposta, o que exige refazer a negociação.',
+       node:'Apresentação da proposta → antes da confirmação'},
+      {title:'Oferecer 2ª via do boleto antes do transbordo',
+       desc:'205 perguntas de segunda via poderiam ser resolvidas com um botão de reenvio no próprio flow.',
+       node:'Confirmação de interesse → botão “Reenviar boleto”'},
+      {title:'Antecipar o desconto à vista na abertura da negociação',
+       desc:'O argumento de maior eficácia (68%) só aparece após a primeira objeção em 6 de cada 10 atendimentos.',
+       node:'Apresentação da proposta → primeira mensagem'},
+    ],
+    comparison:[
+      {label:'Perguntas sobre negativação', cur:'12%', prev:'15%', dir:'up',   note:'−3 p.p. vs. julho'},
+      {label:'Eficácia média dos argumentos', cur:'52%', prev:'46%', dir:'up',   note:'+6 p.p. vs. julho'},
+      {label:'Transbordo para humano',        cur:'32%', prev:'29%', dir:'down', note:'+3 p.p. vs. julho'},
+    ],
+  },
+};
+
+/* Jornadas sem conteúdo próprio reaproveitam o modelo, com volumes menores */
+function iaReportFor(journeyId){ return IA_REPORT[journeyId] || IA_REPORT.j1; }
+
+/* ════════════════════════════════════════════════════════════
+   ROUTER DA IA
+════════════════════════════════════════════════════════════ */
+let iaCurrentId = null;
+
+function showIA(){
+  document.getElementById('v-listing').style.display = 'none';
+  document.getElementById('v-builder').style.display = 'none';
+  document.getElementById('v-ia').style.display = 'flex';
+  document.querySelector('.sidebar').style.display = 'none';
+  document.getElementById('hdrIa').classList.add('active');
+  document.getElementById('hdrIa').classList.remove('has-news');
+  showIaHome();
+}
+
+function showIaHome(){
+  document.getElementById('ia-home').style.display = 'flex';
+  document.getElementById('ia-report').style.display = 'none';
+  renderIaHistory(); renderIaRecur(); renderIaVars();
+}
+
+function showIaReport(id){
+  const a = IA_ANALYSES.find(x=>x.id===id);
+  if(!a || a.status!=='concluida') return;
+  iaCurrentId = id;
+  document.getElementById('ia-home').style.display = 'none';
+  document.getElementById('ia-report').style.display = 'flex';
+  renderIaReport();
+}
+
+function iaTab(name){
+  ['hist','recur','vars'].forEach(t=>{
+    document.getElementById('iaTab-'+t).classList.toggle('active', t===name);
+    document.getElementById('iaPane-'+t).style.display = t===name ? 'flex' : 'none';
+  });
+}
+
+/* ════════════════════════════════════════════════════════════
+   UTILITÁRIOS DE DATA
+════════════════════════════════════════════════════════════ */
+function iaFmt(iso){
+  if(!iso) return '—';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+function iaDays(startIso, endIso){
+  if(!startIso || !endIso) return 0;
+  const s = new Date(startIso+'T00:00:00'), e = new Date(endIso+'T00:00:00');
+  return Math.round((e-s)/86400000) + 1; /* intervalo inclusivo */
+}
+function iaJourneyName(id){
+  const j = IA_JOURNEYS.find(x=>x.id===id);
+  return j ? j.name : '—';
+}
+
+/* ════════════════════════════════════════════════════════════
+   HISTÓRICO DE ANÁLISES
+════════════════════════════════════════════════════════════ */
+function renderIaHistory(){
+  const q  = (document.getElementById('iaSearch').value||'').toLowerCase();
+  const st = document.getElementById('iaFilterStatus').value;
+  const tp = document.getElementById('iaFilterType').value;
+  const list = IA_ANALYSES.filter(a =>
+    (!q  || iaJourneyName(a.journeyId).toLowerCase().includes(q)) &&
+    (!st || a.status===st) &&
+    (!tp || a.type===tp)
+  );
+  document.getElementById('iaHistCount').textContent = IA_ANALYSES.length;
+
+  const tb = document.getElementById('iaHistBody');
+  if(!list.length){
+    tb.innerHTML = `<tr><td colspan="7">
+      <div class="ia-empty">
+        <i class="ph ph-sparkle"></i>
+        <h4>Nenhuma análise encontrada</h4>
+        <p>Gere uma nova análise para uma jornada e um período de até 30 dias.</p>
+      </div></td></tr>`;
+    return;
+  }
+
+  const badge = {
+    concluida:  '<span class="badge b-pub">Concluída</span>',
+    processando:'<span class="badge b-proc">Processando</span>',
+    falha:      '<span class="badge b-err">Falha</span>',
+  };
+
+  tb.innerHTML = list.map(a=>{
+    let acts = '';
+    if(a.status==='concluida'){
+      acts = `<button class="ico-btn" title="Abrir relatório" onclick="showIaReport('${a.id}')"><i class="ph ph-arrow-square-out"></i></button>
+              <button class="ico-btn" title="Exportar" onclick="iaExport()"><i class="ph ph-download-simple"></i></button>`;
+    } else if(a.status==='falha'){
+      acts = `<button class="ico-btn" title="Tentar novamente" onclick="iaRetry('${a.id}')"><i class="ph ph-arrow-clockwise"></i></button>`;
+    } else {
+      acts = `<span class="pg-label">Em processamento…</span>`;
+    }
+    return `<tr>
+      <td class="cell-name"><div class="nm">${iaJourneyName(a.journeyId)}</div></td>
+      <td>${iaFmt(a.start)} – ${iaFmt(a.end)} <span class="pg-label">(${iaDays(a.start,a.end)} dias)</span></td>
+      <td>${a.generatedAt}</td>
+      <td>${a.user}</td>
+      <td><span class="ia-type"><i class="ph ${a.type==='recorrente'?'ph-arrows-clockwise':'ph-hand-pointing'}"></i> ${a.type==='recorrente'?'Recorrente':'Manual'}</span></td>
+      <td>${badge[a.status]}</td>
+      <td class="acts" style="text-align:right">${acts}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════════════════════
+   MODAL: NOVA ANÁLISE
+════════════════════════════════════════════════════════════ */
+let iaRecurOn = false;
+
+function openIaNew(focusRecur){
+  const sel = document.getElementById('iaJourney');
+  sel.innerHTML = IA_JOURNEYS.map(j=>`<option value="${j.id}">${j.name}</option>`).join('');
+  /* período padrão: últimos 30 dias */
+  const end = new Date(); const start = new Date(); start.setDate(start.getDate()-29);
+  document.getElementById('iaEnd').value   = end.toISOString().slice(0,10);
+  document.getElementById('iaStart').value = start.toISOString().slice(0,10);
+  iaRecurOn = !!focusRecur;
+  document.getElementById('iaRecurToggle').classList.toggle('on', iaRecurOn);
+  document.getElementById('iaRecurOpts').style.display = iaRecurOn ? '' : 'none';
+  iaValidateRange();
+  document.getElementById('iaNewModal').classList.add('open');
+}
+function closeIaNew(){ document.getElementById('iaNewModal').classList.remove('open'); }
+
+function iaToggleRecur(){
+  iaRecurOn = !iaRecurOn;
+  document.getElementById('iaRecurToggle').classList.toggle('on', iaRecurOn);
+  document.getElementById('iaRecurOpts').style.display = iaRecurOn ? '' : 'none';
+}
+
+/* Regra: intervalo máximo de 30 dias; acima disso a geração é bloqueada */
+function iaValidateRange(){
+  const s = document.getElementById('iaStart').value;
+  const e = document.getElementById('iaEnd').value;
+  const info = document.getElementById('iaRangeInfo');
+  const txt  = document.getElementById('iaRangeTxt');
+  const btn  = document.getElementById('iaGenBtn');
+  const low  = document.getElementById('iaLowVolume');
+  const d    = iaDays(s,e);
+
+  low.style.display = 'none';
+
+  if(!s || !e){
+    info.classList.remove('err'); txt.textContent = 'Selecione o período da análise.';
+    btn.disabled = true; btn.style.opacity = .5; btn.style.cursor='default';
+    return;
+  }
+  if(d <= 0){
+    info.classList.add('err');
+    txt.innerHTML = '<i class="ph ph-warning-circle"></i> A data final deve ser posterior à data inicial.';
+    btn.disabled = true; btn.style.opacity = .5; btn.style.cursor='default';
+    return;
+  }
+  if(d > 30){
+    info.classList.add('err');
+    txt.innerHTML = `<i class="ph ph-warning-circle"></i> Período de <strong>${d} dias</strong> — o limite por análise é de 30 dias.`;
+    btn.disabled = true; btn.style.opacity = .5; btn.style.cursor='default';
+    return;
+  }
+
+  info.classList.remove('err');
+  txt.innerHTML = `Período selecionado: <strong>${d} ${d===1?'dia':'dias'}</strong>`;
+  btn.disabled = false; btn.style.opacity = 1; btn.style.cursor='pointer';
+
+  /* Aviso de volume baixo — limite mínimo [a definir na spec] */
+  const j = IA_JOURNEYS.find(x=>x.id===document.getElementById('iaJourney').value);
+  const vol = j ? Math.round(j.convPerDay*d) : 0;
+  if(vol < 120){
+    low.style.display = '';
+    document.getElementById('iaLowVolumeTxt').innerHTML =
+      `O período selecionado tem cerca de <strong>${vol} conversas</strong>. A análise pode não ser representativa.`;
+  }
+}
+
+function iaGenerate(){
+  const btn = document.getElementById('iaGenBtn');
+  if(btn.disabled) return;
+  const jid = document.getElementById('iaJourney').value;
+  const s   = document.getElementById('iaStart').value;
+  const e   = document.getElementById('iaEnd').value;
+  const now = new Date();
+  const stamp = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} `
+              + `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const id = 'a'+(IA_ANALYSES.length+1)+'_'+now.getTime();
+
+  IA_ANALYSES.unshift({
+    id, journeyId:jid, start:s, end:e, generatedAt:stamp,
+    user:'Suzany Ribeiro', type: iaRecurOn ? 'recorrente' : 'manual',
+    status:'processando', hasPrev:false, qa:[],
+  });
+
+  if(iaRecurOn){
+    const freq = document.getElementById('iaRecurFreq').value;
+    IA_RECURRING.unshift({id:'r'+now.getTime(), journeyId:jid, freq, next:'a definir', active:true, lastId:id});
+  }
+
+  closeIaNew();
+  iaTab('hist');
+  renderIaHistory(); renderIaRecur();
+  toast('info','Análise em processamento. Você será notificado ao concluir.');
+
+  /* Geração em segundo plano — o usuário continua navegando */
+  setTimeout(()=>{
+    const a = IA_ANALYSES.find(x=>x.id===id);
+    if(!a) return;
+    a.status = 'concluida';
+    renderIaHistory();
+    const hdr = document.getElementById('hdrIa');
+    if(document.getElementById('v-ia').style.display==='none') hdr.classList.add('has-news');
+    toast('ok',`Análise de “${iaJourneyName(jid)}” concluída.`);
+  }, 5000);
+}
+
+function iaRetry(id){
+  const a = IA_ANALYSES.find(x=>x.id===id);
+  if(!a) return;
+  a.status = 'processando';
+  renderIaHistory();
+  toast('info','Nova tentativa em processamento.');
+  setTimeout(()=>{ a.status='concluida'; renderIaHistory(); toast('ok','Análise concluída.'); }, 4000);
+}
+
+function iaRegenerate(){
+  const a = IA_ANALYSES.find(x=>x.id===iaCurrentId);
+  if(!a) return;
+  openIaNew(false);
+  document.getElementById('iaJourney').value = a.journeyId;
+  document.getElementById('iaStart').value   = a.start;
+  document.getElementById('iaEnd').value     = a.end;
+  iaValidateRange();
+}
+
+function iaExport(){
+  /* Formatos [a definir] — seguir o padrão dos demais relatórios */
+  toast('ok','Relatório exportado.');
+}
+
+/* ════════════════════════════════════════════════════════════
+   RELATÓRIO
+════════════════════════════════════════════════════════════ */
+function renderIaReport(){
+  const a = IA_ANALYSES.find(x=>x.id===iaCurrentId);
+  if(!a) return;
+  const r = iaReportFor(a.journeyId);
+  const jn = iaJourneyName(a.journeyId);
+  document.getElementById('iaRepCrumb').textContent = jn;
+
+  const effCls = v => v>=60?'hi':(v>=45?'md':'lo');
+  const effBar = v => v>=60?'ok':(v>=45?'warn':'err');
+
+  const html = `
+    <!-- cabeçalho do recorte -->
+    <div class="ia-block">
+      <div class="ia-block-body" style="flex-direction:row;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div>
+          <div class="ia-title-row">
+            <span class="ia-mark"><i class="ph ph-sparkle"></i></span>
+            <h3 style="font-size:17px">${jn}</h3>
+            ${a.type==='recorrente'?'<span class="ia-tag"><i class="ph ph-arrows-clockwise"></i> Recorrente</span>':''}
+          </div>
+          <div class="ia-item-meta" style="margin-top:6px">
+            <span><i class="ph ph-calendar-blank"></i> ${iaFmt(a.start)} – ${iaFmt(a.end)} (${iaDays(a.start,a.end)} dias)</span>
+            <span class="sep"></span>
+            <span>Gerada em ${a.generatedAt}</span>
+            <span class="sep"></span>
+            <span>Solicitada por ${a.user}</span>
+          </div>
+        </div>
+        <span class="badge b-pub">Concluída</span>
+      </div>
+    </div>
+
+    <!-- resumo executivo -->
+    <div class="ia-hero">
+      <div class="ia-hero-in">
+        <div class="ia-hero-top"><i class="ph ph-sparkle"></i><h4>Resumo executivo</h4></div>
+        ${r.summary.map(p=>`<p>${p}</p>`).join('')}
+      </div>
+    </div>
+
+    <!-- cobertura -->
+    <div class="ia-block">
+      <div class="ia-block-hdr">
+        <h4><i class="ph ph-database"></i> Cobertura da análise</h4>
+        <span class="ia-block-sub">Fluxo da jornada · relatório da jornada · relatório do agente conversacional · conversas · atendimentos humanos</span>
+      </div>
+      <div class="ia-block-body">
+        <div class="ia-stats">
+          <div class="ia-stat">
+            <div class="ia-stat-lbl"><i class="ph ph-chats-circle"></i> Conversas da jornada</div>
+            <div class="ia-stat-val">${r.coverage.conversations.toLocaleString('pt-BR')}</div>
+          </div>
+          <div class="ia-stat">
+            <div class="ia-stat-lbl"><i class="ph ph-headset"></i> Atendimentos humanos</div>
+            <div class="ia-stat-val">${r.coverage.humanTotal}</div>
+            <div class="ia-stat-hint">${r.coverage.humanText} por mensagem · ${r.coverage.humanVoice} por voz</div>
+          </div>
+          <div class="ia-stat">
+            <div class="ia-stat-lbl"><i class="ph ph-microphone"></i> Ligações analisadas</div>
+            <div class="ia-stat-val">${r.coverage.callsTranscribed}</div>
+            <div class="ia-stat-hint">Via transcrição automática</div>
+          </div>
+          <div class="ia-stat muted">
+            <div class="ia-stat-lbl"><i class="ph ph-microphone-slash"></i> Não analisadas</div>
+            <div class="ia-stat-val">${r.coverage.callsSkipped}</div>
+            <div class="ia-stat-hint">Sem transcrição disponível</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${a.hasPrev ? `
+    <!-- comparativo com a execução anterior -->
+    <div class="ia-block">
+      <div class="ia-block-hdr">
+        <h4><i class="ph ph-chart-line-up"></i> Comparativo com a execução anterior</h4>
+        <span class="ia-block-sub">01/07/2026 – 30/07/2026</span>
+      </div>
+      <div class="ia-block-body">
+        <div class="ia-cmp-grid">
+          ${r.comparison.map(c=>`
+            <div class="ia-stat">
+              <div class="ia-stat-lbl">${c.label}</div>
+              <div class="ia-stat-val">${c.cur}
+                <span class="ia-delta ${c.dir}" style="font-size:12px;margin-left:6px">
+                  <i class="ph ${c.dir==='up'?'ph-trend-up':(c.dir==='down'?'ph-trend-down':'ph-minus')}"></i>${c.note}
+                </span>
+              </div>
+              <div class="ia-stat-hint">Anterior: ${c.prev}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>` : ''}
+
+    <!-- perguntas mais frequentes -->
+    <div class="ia-block">
+      <div class="ia-block-hdr">
+        <h4><i class="ph ph-question"></i> Perguntas mais frequentes dos contatos</h4>
+        <span class="ia-block-sub">Agrupadas por tema · ${r.coverage.conversations.toLocaleString('pt-BR')} conversas</span>
+      </div>
+      <div class="ia-block-body">
+        ${r.themes.map((t,i)=>`
+          <div class="ia-item" id="iaTheme${i}">
+            <div class="ia-item-hdr" onclick="iaToggleItem('iaTheme${i}')">
+              <div class="ia-item-main">
+                <div class="ia-item-title">
+                  ${t.name}
+                  ${t.gap?'<span class="ia-seal gap"><i class="ph ph-warning"></i> Sem resposta no fluxo</span>':''}
+                </div>
+                <div class="ia-item-meta">
+                  <span>${t.volume} menções</span>
+                  <span class="sep"></span>
+                  ${t.calls
+                    ? `<span class="ia-seal"><i class="ph ph-microphone"></i> Confirmado em ${t.calls} ligações</span>`
+                    : `<span class="ia-seal none"><i class="ph ph-microphone-slash"></i> Não confirmado em ligações</span>`}
+                </div>
+                <div class="ia-bar"><span style="width:${t.pct}%"></span></div>
+              </div>
+              <div class="ia-item-pct">${t.pct}%</div>
+              <i class="ph ph-caret-down ia-item-caret"></i>
+            </div>
+            <div class="ia-item-body">
+              <div class="ia-sub-lbl">Exemplos reais</div>
+              <div class="ia-quotes">
+                ${t.examples.map(x=>`<div class="ia-quote">“${x.txt}”<span class="ia-quote-src">${x.src}</span></div>`).join('')}
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- argumentos dos atendentes -->
+    <div class="ia-block">
+      <div class="ia-block-hdr">
+        <h4><i class="ph ph-chat-teardrop-text"></i> Argumentos utilizados pelos atendentes</h4>
+        <span class="ia-block-sub">Eficácia calculada pelo desfecho dos atendimentos em que o argumento foi utilizado</span>
+      </div>
+      <div class="ia-block-body">
+        ${r.args.map((g,i)=>`
+          <div class="ia-item" id="iaArg${i}">
+            <div class="ia-item-hdr" onclick="iaToggleItem('iaArg${i}')">
+              <div class="ia-item-main">
+                <div class="ia-item-title">${g.name}</div>
+                <div class="ia-item-meta">
+                  <span>${g.uses} usos</span>
+                  <span class="sep"></span>
+                  ${g.calls
+                    ? `<span class="ia-seal"><i class="ph ph-microphone"></i> Confirmado em ${g.calls} ligações</span>`
+                    : `<span class="ia-seal none"><i class="ph ph-microphone-slash"></i> Não confirmado em ligações</span>`}
+                </div>
+                <div class="ia-bar ${effBar(g.eff)}"><span style="width:${g.eff}%"></span></div>
+              </div>
+              <div class="ia-eff">
+                <div class="ia-eff-val ${effCls(g.eff)}">${g.eff}%</div>
+              </div>
+              <i class="ph ph-caret-down ia-item-caret"></i>
+            </div>
+            <div class="ia-item-body">
+              <div class="ia-sub-lbl">Desfechos dos atendimentos</div>
+              <div class="ia-outcomes">
+                <div class="ia-outcome"><div class="ia-outcome-lbl">Acordo fechado</div><div class="ia-outcome-val">${g.outcomes.deal}</div></div>
+                <div class="ia-outcome"><div class="ia-outcome-lbl">Retorno agendado</div><div class="ia-outcome-val">${g.outcomes.callback}</div></div>
+                <div class="ia-outcome"><div class="ia-outcome-lbl">Recusa</div><div class="ia-outcome-val">${g.outcomes.refusal}</div></div>
+              </div>
+              <div class="ia-quote" style="margin-top:12px;font-style:normal">${g.note}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- sugestões de melhoria -->
+    <div class="ia-block">
+      <div class="ia-block-hdr">
+        <h4><i class="ph ph-lightbulb"></i> Sugestões de melhoria na jornada</h4>
+        <span class="ia-block-sub">Perguntas frequentes sem resposta automática no fluxo</span>
+      </div>
+      <div class="ia-block-body">
+        ${r.suggestions.map(s=>`
+          <div class="ia-sugg">
+            <div class="ia-sugg-ico"><i class="ph ph-lightbulb"></i></div>
+            <div class="ia-sugg-body">
+              <div class="ia-sugg-title">${s.title}</div>
+              <div class="ia-sugg-desc">${s.desc}</div>
+              <div class="ia-node"><i class="ph ph-flow-arrow"></i> ${s.node}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- insumo para o assistente do chat (CCM-2384) -->
+    <div class="info-banner">
+      <i class="ph ph-sparkle"></i>
+      <span>Os argumentos de maior eficácia desta análise ficam disponíveis como sugestão para a personalização do prompt do assistente de IA do operador no Chat.</span>
+    </div>
+
+  `;
+  document.getElementById('iaReportBody').innerHTML = html;
+  renderIaDock();
+}
+
+/* Painel fixo do prompt — acompanha a rolagem do relatório */
+function renderIaDock(){
+  const a = IA_ANALYSES.find(x=>x.id===iaCurrentId);
+  const el = document.getElementById('iaDock');
+  if(!a || !el) return;
+  const jn = iaJourneyName(a.journeyId);
+  el.innerHTML = `
+    <div class="ia-dock-hdr">
+      <h4><i class="ph ph-chat-circle-dots"></i> Perguntar sobre esta análise</h4>
+      <p>As respostas consideram somente <strong>${jn}</strong> no período de ${iaFmt(a.start)} a ${iaFmt(a.end)}.</p>
+    </div>
+    <div class="ia-dock-body" id="iaDockBody">
+      <div class="ia-chat" id="iaChat">${iaRenderQa(a)}</div>
+    </div>
+    <div class="ia-dock-foot">
+      <div class="ia-suggest">
+        <span class="ia-chip" onclick="iaChip(this)">Qual argumento fecha mais acordos?</span>
+        <span class="ia-chip" onclick="iaChip(this)">O que os contatos mais perguntam sobre negativação?</span>
+        <span class="ia-chip" onclick="iaChip(this)">Quantas ligações foram analisadas?</span>
+        <span class="ia-chip" onclick="iaChip(this)">Compare com a jornada de renovação</span>
+      </div>
+      <div class="ia-ask">
+        <textarea id="iaAskInput" placeholder="Pergunte algo sobre os dados desta análise…"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();iaAsk();}"></textarea>
+        <button class="btn btn-prim" onclick="iaAsk()"><i class="ph ph-paper-plane-tilt"></i></button>
+      </div>
+      <div class="field-hint">Perguntas e respostas ficam salvas junto a esta análise.</div>
+    </div>`;
+  iaDockScroll();
+}
+function iaDockScroll(){
+  const b=document.getElementById('iaDockBody');
+  if(b) b.scrollTop = b.scrollHeight;
+}
+
+function iaToggleItem(id){
+  const el = document.getElementById(id);
+  if(el) el.classList.toggle('open');
+}
+
+/* ════════════════════════════════════════════════════════════
+   CAMPO DE PROMPT — restrito ao recorte da análise aberta
+════════════════════════════════════════════════════════════ */
+function iaRenderQa(a){
+  if(!a.qa.length){
+    return `<div class="ia-msg">
+      <div class="ia-msg-av"><i class="ph ph-sparkle"></i></div>
+      <div>
+        <div class="ia-msg-bub">Pergunte o que quiser sobre esta análise. Respondo apenas com base nos dados de <strong>${iaJourneyName(a.journeyId)}</strong> no período selecionado.</div>
+      </div>
+    </div>`;
+  }
+  return a.qa.map(m=>`
+    <div class="ia-msg ${m.role==='me'?'me':''}">
+      <div class="ia-msg-av">${m.role==='me'?'SS':'<i class="ph ph-sparkle"></i>'}</div>
+      <div>
+        <div class="ia-msg-bub">${m.text}</div>
+        <div class="ia-msg-time" style="${m.role==='me'?'text-align:right':''}">${m.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+function iaChip(el){
+  document.getElementById('iaAskInput').value = el.textContent.trim();
+  iaAsk();
+}
+
+function iaAsk(){
+  const inp = document.getElementById('iaAskInput');
+  const q = (inp.value||'').trim();
+  if(!q) return;
+  const a = IA_ANALYSES.find(x=>x.id===iaCurrentId);
+  if(!a) return;
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  a.qa.push({role:'me', text:q, time});
+  inp.value='';
+  const chat = document.getElementById('iaChat');
+  chat.innerHTML = iaRenderQa(a) + `
+    <div class="ia-msg">
+      <div class="ia-msg-av"><i class="ph ph-sparkle"></i></div>
+      <div class="ia-msg-bub"><div class="ia-typing"><span></span><span></span><span></span></div></div>
+    </div>`;
+  iaDockScroll();
+
+  setTimeout(()=>{
+    a.qa.push({role:'ia', text: iaAnswer(q, a), time});
+    document.getElementById('iaChat').innerHTML = iaRenderQa(a);
+    iaDockScroll();
+  }, 1100);
+}
+
+/* Respostas simuladas — sempre limitadas ao recorte (jornada + período) */
+function iaAnswer(q, a){
+  const r  = iaReportFor(a.journeyId);
+  const s  = q.toLowerCase();
+  const jn = iaJourneyName(a.journeyId);
+
+  /* Fora do recorte: outra jornada ou outro período */
+  const outOfScope = IA_JOURNEYS.some(j => j.id!==a.journeyId && s.includes(j.name.split('—')[0].trim().toLowerCase().split(' ')[0]) && s.includes('jornada'))
+    || /outra jornada|compare com|comparar com|todas as jornadas|mês passado|ano passado|último ano|outro período/.test(s);
+  if(outOfScope){
+    return `Não há dados disponíveis para esse recorte. Esta análise contempla somente <strong>${jn}</strong> entre ${iaFmt(a.start)} e ${iaFmt(a.end)}. Para outra jornada ou outro período, gere uma nova análise.`;
+  }
+
+  if(/argumento|efic|fecha mais|acordo/.test(s)){
+    const top = r.args[0];
+    return `O argumento de maior eficácia é <strong>“${top.name}”</strong>, com ${top.eff}% de acordos em ${top.uses} usos (${top.outcomes.deal} acordos, ${top.outcomes.callback} retornos agendados, ${top.outcomes.refusal} recusas). Foi confirmado em ${top.calls} ligações.
+      <ul><li>${r.args[1].name} — ${r.args[1].eff}%</li><li>${r.args[2].name} — ${r.args[2].eff}%</li></ul>`;
+  }
+  if(/negativ|serasa|restri/.test(s)){
+    const t = r.themes.find(x=>/negativ/i.test(x.name));
+    return `Negativação e Serasa aparecem em <strong>${t.volume} menções (${t.pct}%)</strong> e foram confirmadas em ${t.calls} ligações. O tema <strong>não tem resposta automática no fluxo</strong> — todos os contatos foram transbordados para atendimento humano. A pergunta mais recorrente é sobre o prazo de retirada da restrição após o pagamento.`;
+  }
+  if(/ligaç|voz|transcri|áudio|audio/.test(s)){
+    return `Foram analisadas <strong>${r.coverage.callsTranscribed} ligações</strong> por meio da transcrição automática já disponível nos relatórios. Outras <strong>${r.coverage.callsSkipped} ligações</strong> não possuíam transcrição e foram desconsideradas na análise.`;
+  }
+  if(/pergunt|dúvida|duvida|tema|frequen/.test(s)){
+    return `Os temas mais frequentes são:
+      <ul>${r.themes.slice(0,4).map(t=>`<li>${t.name} — ${t.volume} menções (${t.pct}%)</li>`).join('')}</ul>
+      Dois deles — negativação e parcelamento no cartão — não têm resposta automática no fluxo.`;
+  }
+  if(/melhor|sugest|fluxo|otimiz/.test(s)){
+    return `A recomendação de maior impacto é <strong>${r.suggestions[0].title.toLowerCase()}</strong>: ${r.suggestions[0].desc} O ponto indicado é <strong>${r.suggestions[0].node}</strong>.`;
+  }
+  if(/conversa|volume|quant/.test(s)){
+    return `No período foram <strong>${r.coverage.conversations.toLocaleString('pt-BR')} conversas</strong> na jornada, das quais ${r.coverage.humanTotal} geraram atendimento humano (${r.coverage.humanText} por mensagem e ${r.coverage.humanVoice} por voz).`;
+  }
+  return `Com base nesta análise de <strong>${jn}</strong> (${iaFmt(a.start)} – ${iaFmt(a.end)}): o tema dominante é <strong>${r.themes[0].name.toLowerCase()}</strong> (${r.themes[0].pct}%) e o argumento mais eficaz é <strong>“${r.args[0].name}”</strong> (${r.args[0].eff}%). Se a pergunta for sobre outra jornada ou outro período, não há dados disponíveis neste recorte.`;
+}
+
+/* ════════════════════════════════════════════════════════════
+   ANÁLISES RECORRENTES
+════════════════════════════════════════════════════════════ */
+function renderIaRecur(){
+  const el = document.getElementById('iaRecurList');
+  if(!IA_RECURRING.length){
+    el.innerHTML = `<div class="ia-empty"><i class="ph ph-arrows-clockwise"></i>
+      <h4>Nenhuma recorrência configurada</h4>
+      <p>Configure uma recorrência para acompanhar a evolução das perguntas e dos argumentos.</p></div>`;
+    return;
+  }
+  const freqLbl = {semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal (últimos 30 dias)'};
+  el.innerHTML = IA_RECURRING.map(rc=>`
+    <div class="ia-recur-card">
+      <div class="ia-sugg-ico"><i class="ph ph-arrows-clockwise"></i></div>
+      <div class="ia-recur-body">
+        <div class="ia-recur-name">${iaJourneyName(rc.journeyId)}</div>
+        <div class="ia-recur-meta">
+          <span><i class="ph ph-repeat"></i> ${freqLbl[rc.freq]||rc.freq}</span>
+          <span class="sep"></span>
+          <span>Próxima execução: ${rc.next}</span>
+          ${rc.lastId?'<span class="sep"></span><span>Comparativo com a execução anterior ativo</span>':''}
+        </div>
+      </div>
+      <div class="toggle-wrap">
+        <span class="toggle ${rc.active?'on':''}" onclick="iaToggleRecurItem('${rc.id}')"></span>
+        <span>${rc.active?'Ativa':'Pausada'}</span>
+      </div>
+    </div>`).join('');
+}
+
+function iaToggleRecurItem(id){
+  const rc = IA_RECURRING.find(x=>x.id===id);
+  if(!rc) return;
+  rc.active = !rc.active;
+  renderIaRecur();
+  toast(rc.active?'ok':'warn', rc.active?'Recorrência ativada.':'Recorrência pausada.');
+}
+
+/* ════════════════════════════════════════════════════════════
+   COLETA EM VARIÁVEIS (prompt fixo de extração)
+════════════════════════════════════════════════════════════ */
+function renderIaVars(){
+  const el = document.getElementById('iaVarList');
+  if(!IA_VARS.length){
+    el.innerHTML = `<div class="ia-empty"><i class="ph ph-brackets-curly"></i>
+      <h4>Nenhum prompt de extração configurado</h4>
+      <p>Configure um prompt para que a IA capture a informação em qualquer ponto da conversa e grave em uma variável.</p></div>`;
+    return;
+  }
+  el.innerHTML = IA_VARS.map(p=>{
+    const v = IA_VARIABLES.find(x=>x.id===p.varId);
+    return `
+    <div class="ia-var">
+      <div class="ia-sugg-ico"><i class="ph ph-brackets-curly"></i></div>
+      <div class="ia-var-body">
+        <div class="ia-var-prompt">“${p.prompt}”</div>
+        <div class="ia-var-target">
+          <span class="pg-label">${iaJourneyName(p.journeyId)}</span>
+          <i class="ph ph-arrow-right" style="font-size:12px;color:var(--neutral-color-low-light)"></i>
+          <span class="ia-var-code">${v?v.code:'—'}</span>
+          <span class="ia-ai-src"><i class="ph ph-sparkle"></i> Preenchido por IA</span>
+        </div>
+        <div class="ia-fill-list">
+          ${p.fills.map(f=>`
+            <div class="ia-fill">
+              <span class="who">${f.who}</span>
+              ${f.val
+                ? `<span class="val">${f.val}</span><span class="ia-ai-src"><i class="ph ph-sparkle"></i> Preenchido por IA</span>`
+                : `<span class="val empty">Não encontrado na conversa — variável permanece vazia</span>`}
+            </div>`).join('')}
+        </div>
+      </div>
+      <button class="ico-btn" title="Excluir prompt" onclick="iaDeleteVar('${p.id}')"><i class="ph ph-trash"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function openIaVar(){
+  document.getElementById('iaVarJourney').innerHTML = IA_JOURNEYS.map(j=>`<option value="${j.id}">${j.name}</option>`).join('');
+  document.getElementById('iaVarTarget').innerHTML  = IA_VARIABLES.map(v=>`<option value="${v.id}">${v.label} · ${v.code}</option>`).join('');
+  document.getElementById('iaVarPrompt').value = '';
+  document.getElementById('iaVarModal').classList.add('open');
+}
+function closeIaVar(){ document.getElementById('iaVarModal').classList.remove('open'); }
+
+function iaSaveVar(){
+  const prompt = document.getElementById('iaVarPrompt').value.trim();
+  if(!prompt){ toast('err','Informe o prompt de extração.'); return; }
+  IA_VARS.push({
+    id:'p'+Date.now(),
+    journeyId:document.getElementById('iaVarJourney').value,
+    prompt,
+    varId:document.getElementById('iaVarTarget').value,
+    createdBy:'Suzany Ribeiro',
+    fills:[],
+  });
+  closeIaVar(); renderIaVars();
+  toast('ok','Prompt de extração salvo. A variável será preenchida na próxima geração de análise.');
+}
+
+function iaDeleteVar(id){
+  IA_VARS = IA_VARS.filter(p=>p.id!==id);
+  renderIaVars();
+  toast('ok','Prompt de extração excluído.');
+}
 
 /* ════════════════════════════════════════════════════════════
    INIT
